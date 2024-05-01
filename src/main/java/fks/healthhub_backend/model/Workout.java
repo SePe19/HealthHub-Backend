@@ -31,9 +31,13 @@ public class Workout {
     @Column(name = "description")
     private String description;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     //workout_id and exercise_id are foreign keys to workouts and exercises
     @ElementCollection
-    @CollectionTable(name = "workout_exercises", joinColumns = @JoinColumn(name = "workout_id"),
+    @CollectionTable(name = "workout_has_exercises", joinColumns = @JoinColumn(name = "workout_id"),
             uniqueConstraints = @UniqueConstraint(columnNames = {"workout_id", "exercise_id"}))
     @AttributeOverrides({
             @AttributeOverride(name = "exerciseName", column = @Column(name = "exercise_name")),
