@@ -46,8 +46,14 @@ public class WorkoutController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Long> updateWorkout(@PathVariable Long id, @RequestBody Workout workout) {
-        workoutService.updateWorkout(id, workout);
+    public ResponseEntity<Long> updateWorkout(@PathVariable Long id, @RequestBody Workout workout, @RequestParam Long userId) {
+        workoutService.updateWorkout(id, workout, userId);
+        return ResponseEntity.ok().body(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Long> updateWorkout(@PathVariable Long id) {
+        workoutService.deleteWorkout(id);
         return ResponseEntity.ok().body(id);
     }
 }
