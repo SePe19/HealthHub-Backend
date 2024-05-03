@@ -40,9 +40,9 @@ public class WorkoutController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Long> createWorkout(@RequestBody Workout workout) {
-        workoutService.createWorkout(workout);
-        return new ResponseEntity<>(workout.getId(), HttpStatus.CREATED);
+    public ResponseEntity<Workout> createWorkout(@RequestBody Workout workout, @RequestParam Long userId) {
+        Workout createdWorkout = workoutService.createWorkout(workout, userId);
+        return new ResponseEntity<>(createdWorkout, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

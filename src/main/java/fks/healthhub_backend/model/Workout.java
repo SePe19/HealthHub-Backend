@@ -7,7 +7,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Getter
@@ -30,11 +32,12 @@ public class Workout {
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-/*    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL)
-    private Set<WorkoutHasExercises> workoutHasExercises = new HashSet<>();*/
+
+    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL)
+    private Set<WorkoutHasExercises> workoutHasExercises = new HashSet<>();
 
     public Workout(){}
 

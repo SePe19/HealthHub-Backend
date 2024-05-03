@@ -1,5 +1,6 @@
 package fks.healthhub_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class WorkoutHasExercises {
 
     @ManyToOne
     @JoinColumn(name = "workout_id", referencedColumnName = "id")
+    @JsonIgnore
     private Workout workout;
 
     @ManyToOne

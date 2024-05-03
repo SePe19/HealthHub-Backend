@@ -2,7 +2,9 @@ package fks.healthhub_backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.Workout;
+import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutHasExercisesRepository;
 import fks.healthhub_backend.repository.ExerciseRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
@@ -20,15 +22,17 @@ public class WorkoutService {
     private final ObjectMapper objectMapper;
     private final ExerciseRepository exerciseRepository;
     private final WorkoutHasExercisesRepository workoutHasExercisesRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public WorkoutService(WorkoutRepository workoutRepository, ObjectMapper objectMapper,
                           @Qualifier("Exercise") ExerciseRepository exerciseRepository,
-                          WorkoutHasExercisesRepository workoutHasExercisesRepository) {
+                          WorkoutHasExercisesRepository workoutHasExercisesRepository, UserRepository userRepository) {
         this.workoutRepository = workoutRepository;
         this.objectMapper = objectMapper;
         this.exerciseRepository = exerciseRepository;
         this.workoutHasExercisesRepository = workoutHasExercisesRepository;
+        this.userRepository = userRepository;
     }
 
     @SneakyThrows
@@ -48,8 +52,12 @@ public class WorkoutService {
         return workouts;
     }
 
-    public void createWorkout(Workout workout) {
-        workoutRepository.save(workout);
+    @SneakyThrows
+    public Workout createWorkout(Workout workout, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found with ID: " + userId));
+        workout.setUser(user);
+        return workoutRepository.save(workout);
     }
 
     public void updateWorkout(Long id, Workout updatedWorkout) {
