@@ -35,9 +35,9 @@ public class Workout {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL)
     private Set<WorkoutHasExercises> workoutHasExercises = new HashSet<>();
+
 
     public Workout(){}
 

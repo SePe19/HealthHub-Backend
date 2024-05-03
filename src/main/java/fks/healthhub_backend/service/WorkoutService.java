@@ -60,13 +60,22 @@ public class WorkoutService {
         return workoutRepository.save(workout);
     }
 
-    public void updateWorkout(Long id, Workout updatedWorkout) {
+    @SneakyThrows
+    public void updateWorkout(Long id, Workout updatedWorkout, Long userId) {
         Workout workout = workoutRepository.findById(id)
                 .orElseThrow(() -> new NoResultException("Workout with ID: " + id + " could not be found"));
         if(updatedWorkout != null) {
             workout.setTitle(!updatedWorkout.getTitle().equals("") ? updatedWorkout.getTitle() : workout.getTitle());
             workout.setDescription(!updatedWorkout.getDescription().equals("") ? updatedWorkout.getDescription() : workout.getDescription());
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new Exception("User not found with ID: " + userId));
+            workout.setUser(user);
         }
         workoutRepository.save(workout);
+    }
+
+    public void deleteWorkout(Long id) {
+        workoutRepository.deleteById(id);
     }
 }
