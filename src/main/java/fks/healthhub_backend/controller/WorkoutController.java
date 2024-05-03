@@ -44,4 +44,10 @@ public class WorkoutController {
         workoutService.createWorkout(workout);
         return new ResponseEntity<>(workout.getId(), HttpStatus.CREATED);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Long> updateWorkout(@PathVariable Long id, @RequestBody Workout workout) {
+        workoutService.updateWorkout(id, workout);
+        return ResponseEntity.ok().body(id);
+    }
 }

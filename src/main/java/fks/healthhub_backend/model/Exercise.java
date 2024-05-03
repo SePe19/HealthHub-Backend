@@ -6,15 +6,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
 import java.util.Objects;
 
 @RequiredArgsConstructor
 @Getter
 @Setter
 @Entity
-@Table(name = "workouts")
-public class Workout {
+@Table(name = "exercises")
+public class Exercise {
 
     @Id
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -29,21 +28,15 @@ public class Workout {
     @Column(name = "description")
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private User user;
 
-/*    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL)
-    private Set<WorkoutHasExercises> workoutHasExercises = new HashSet<>();*/
-
-    public Workout(){}
+    public Exercise(){}
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Workout workout = (Workout) o;
-        return Objects.equals(id, workout.id);
+        Exercise exercise = (Exercise) o;
+        return Objects.equals(id, exercise.id);
     }
 
     @Override
