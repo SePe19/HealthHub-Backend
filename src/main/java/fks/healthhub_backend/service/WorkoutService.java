@@ -2,11 +2,16 @@ package fks.healthhub_backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.Workout;
+import fks.healthhub_backend.repository.UserRepository;
+import fks.healthhub_backend.repository.WorkoutHasExercisesRepository;
+import fks.healthhub_backend.repository.ExerciseRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
 import jakarta.persistence.NoResultException;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,11 +20,19 @@ import java.util.List;
 public class WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final ObjectMapper objectMapper;
+    private final ExerciseRepository exerciseRepository;
+    private final WorkoutHasExercisesRepository workoutHasExercisesRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public WorkoutService(WorkoutRepository workoutRepository, ObjectMapper objectMapper) {
+    public WorkoutService(WorkoutRepository workoutRepository, ObjectMapper objectMapper,
+                          @Qualifier("Exercise") ExerciseRepository exerciseRepository,
+                          WorkoutHasExercisesRepository workoutHasExercisesRepository, UserRepository userRepository) {
         this.workoutRepository = workoutRepository;
         this.objectMapper = objectMapper;
+        this.exerciseRepository = exerciseRepository;
+        this.workoutHasExercisesRepository = workoutHasExercisesRepository;
+        this.userRepository = userRepository;
     }
 
     @SneakyThrows
@@ -39,7 +52,21 @@ public class WorkoutService {
         return workouts;
     }
 
-    public void createWorkout(Workout workout) {
+    @SneakyThrows
+    public Workout createWorkout(Workout workout, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found with ID: " + userId));
+        workout.setUser(user);
+        return workoutRepository.save(workout);
+    }
+
+    public void updateWorkout(Long id, Workout updatedWorkout) {
+        Workout workout = workoutRepository.findById(id)
+                .orElseThrow(() -> new NoResultException("Workout with ID: " + id + " could not be found"));
+        if(updatedWorkout != null) {
+            workout.setTitle(!updatedWorkout.getTitle().equals("") ? updatedWorkout.getTitle() : workout.getTitle());
+            workout.setDescription(!updatedWorkout.getDescription().equals("") ? updatedWorkout.getDescription() : workout.getDescription());
+        }
         workoutRepository.save(workout);
     }
 }
