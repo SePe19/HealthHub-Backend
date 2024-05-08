@@ -28,6 +28,9 @@ public class Exercise {
     @Column(name = "description")
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "exercise_difficulty")
+    private ExerciseDifficulty exerciseDifficulty;
 
     public Exercise(){}
 

@@ -31,6 +31,10 @@ public class Workout {
     @Column(name = "description")
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "workout_type")
+    private WorkoutType workoutType;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
