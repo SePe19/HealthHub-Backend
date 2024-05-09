@@ -11,7 +11,6 @@ import fks.healthhub_backend.repository.WorkoutRepository;
 import jakarta.persistence.NoResultException;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class WorkoutService {
 
     @Autowired
     public WorkoutService(WorkoutRepository workoutRepository, ObjectMapper objectMapper,
-                          @Qualifier("Exercise") ExerciseRepository exerciseRepository,
+                          ExerciseRepository exerciseRepository,
                           WorkoutHasExercisesRepository workoutHasExercisesRepository, UserRepository userRepository) {
         this.workoutRepository = workoutRepository;
         this.objectMapper = objectMapper;

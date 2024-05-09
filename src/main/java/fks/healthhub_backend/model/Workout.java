@@ -32,7 +32,7 @@ public class Workout {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "workout_type")
+    @Column(name = "workout_type", nullable = false)
     private WorkoutType workoutType;
 
     @ManyToOne(fetch = FetchType.EAGER)
