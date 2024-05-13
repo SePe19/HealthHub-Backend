@@ -41,6 +41,7 @@ class WorkoutServiceTest {
 
     @Test
     void getWorkout() {
+        // Arrange
         Long workoutId = 1L;
         Workout workout = new Workout();
         workout.setId(workoutId);
@@ -49,8 +50,10 @@ class WorkoutServiceTest {
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
         when(objectMapper.valueToTree(workout)).thenReturn(workoutJson);
 
+        // Act
         JsonNode result = workoutService.getWorkout(workoutId);
 
+        // Assert
         assertNotNull(result);
         assertEquals(workoutJson, result);
         verify(workoutRepository, times(1)).findById(workoutId);
@@ -59,14 +62,17 @@ class WorkoutServiceTest {
 
     @Test
     void getWorkout_notFound() {
+        // Arrange
         Long workoutId = 1L;
 
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
 
+        // Act
         Exception exception = assertThrows(NoResultException.class, () -> {
             workoutService.getWorkout(workoutId);
         });
 
+        // Assert
         assertEquals("Workout with id: 1 does not exist", exception.getMessage());
         verify(workoutRepository, times(1)).findById(workoutId);
         verify(objectMapper, never()).valueToTree(any());
@@ -74,14 +80,17 @@ class WorkoutServiceTest {
 
     @Test
     void getAllWorkouts() {
+        // Arrange
         Workout workout1 = new Workout();
         Workout workout2 = new Workout();
         List<Workout> workouts = Arrays.asList(workout1, workout2);
 
         when(workoutRepository.findAll()).thenReturn(workouts);
 
+        // Act
         List<Workout> result = workoutService.getAllWorkouts();
 
+        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(workouts, result);
@@ -90,6 +99,7 @@ class WorkoutServiceTest {
 
     @Test
     void getAllWorkoutsByUser() {
+        // Arrange
         Long userId = 1L;
         Workout workout1 = new Workout();
         Workout workout2 = new Workout();
@@ -97,8 +107,10 @@ class WorkoutServiceTest {
 
         when(workoutRepository.findWorkoutsByUserId(userId)).thenReturn(workouts);
 
+        // Act
         List<Workout> result = workoutService.getAllWorkoutsByUser(userId);
 
+        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(workouts, result);
@@ -107,6 +119,7 @@ class WorkoutServiceTest {
 
     @Test
     void createWorkout() {
+        // Arrange
         Long userId = 1L;
         User user = new User();
         user.setId(userId);
@@ -117,8 +130,10 @@ class WorkoutServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(workoutRepository.save(workout)).thenReturn(savedWorkout);
 
+        // Act
         Workout result = workoutService.createWorkout(workout, userId);
 
+        // Assert
         assertNotNull(result);
         assertEquals(savedWorkout, result);
         verify(userRepository, times(1)).findById(userId);
@@ -127,15 +142,18 @@ class WorkoutServiceTest {
 
     @Test
     void createWorkout_userNotFound() {
+        // Arrange
         Long userId = 1L;
         Workout workout = new Workout();
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
+        // Act
         Exception exception = assertThrows(Exception.class, () -> {
             workoutService.createWorkout(workout, userId);
         });
 
+        // Assert
         assertEquals("User not found with ID: 1", exception.getMessage());
         verify(userRepository, times(1)).findById(userId);
         verify(workoutRepository, never()).save(any());
@@ -143,6 +161,7 @@ class WorkoutServiceTest {
 
     @Test
     void updateWorkout() {
+        // Arrange
         Long workoutId = 1L;
         Long userId = 1L;
         Workout existingWorkout = new Workout();
@@ -156,8 +175,10 @@ class WorkoutServiceTest {
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(existingWorkout));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
+        // Act
         workoutService.updateWorkout(workoutId, updatedWorkout, userId);
 
+        // Assert
         assertEquals("New Title", existingWorkout.getTitle());
         assertEquals("New Description", existingWorkout.getDescription());
         assertEquals(user, existingWorkout.getUser());
@@ -168,16 +189,19 @@ class WorkoutServiceTest {
 
     @Test
     void updateWorkout_notFound() {
+        // Arrange
         Long workoutId = 1L;
         Long userId = 1L;
         Workout updatedWorkout = new Workout();
 
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
 
+        // Act
         Exception exception = assertThrows(NoResultException.class, () -> {
             workoutService.updateWorkout(workoutId, updatedWorkout, userId);
         });
 
+        // Assert
         assertEquals("Workout with ID: 1 could not be found", exception.getMessage());
         verify(workoutRepository, times(1)).findById(workoutId);
         verify(userRepository, never()).findById(userId);
@@ -186,12 +210,15 @@ class WorkoutServiceTest {
 
     @Test
     void deleteWorkout() {
+        // Arrange
         Long workoutId = 1L;
 
         doNothing().when(workoutRepository).deleteById(workoutId);
 
+        // Act
         workoutService.deleteWorkout(workoutId);
 
+        // Assert
         verify(workoutRepository, times(1)).deleteById(workoutId);
     }
 }
