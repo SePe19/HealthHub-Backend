@@ -2,8 +2,10 @@ package fks.healthhub_backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fks.healthhub_backend.model.Exercise;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.Workout;
+import fks.healthhub_backend.model.WorkoutHasExercises;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutHasExercisesRepository;
 import fks.healthhub_backend.repository.ExerciseRepository;
@@ -56,6 +58,21 @@ public class WorkoutService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new Exception("User not found with ID: " + userId));
         workout.setUser(user);
+
+        if (workout.getWorkoutHasExercises() != null) {
+            for (WorkoutHasExercises workoutHasExercise : workout.getWorkoutHasExercises()) {
+                workoutHasExercise.setWorkout(workout);
+
+                if (workoutHasExercise.getExercise() != null && workoutHasExercise.getExercise().getId() != null) {
+                    Long exerciseId = workoutHasExercise.getExercise().getId();
+                    Exercise exercise = exerciseRepository.findById(exerciseId).orElse(null);
+                    workoutHasExercise.setExercise(exercise);
+                } else {
+                    workoutHasExercise.setExercise(null);
+                }
+            }
+        }
+
         return workoutRepository.save(workout);
     }
 

@@ -2,6 +2,7 @@ package fks.healthhub_backend.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fks.healthhub_backend.model.User;
+import fks.healthhub_backend.model.UserHasWorkouts;
 import fks.healthhub_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,10 +34,22 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}/scheduled-workouts")
+    public ResponseEntity<JsonNode> plannedWorkout(@PathVariable Long id) {
+        JsonNode workout = userService.getScheduledWorkouts(id);
+        return new ResponseEntity<>(workout, HttpStatus.OK);
+    }
+
     @PostMapping("/")
     public ResponseEntity<Long> createUser(@RequestBody User user) {
         userService.createUser(user);
         return new ResponseEntity<>(user.getId(), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/scheduled-workouts")
+    public ResponseEntity<Long> createScheduledWorkout(@RequestBody UserHasWorkouts userHasWorkout, @RequestParam Long userId, @RequestParam Long workoutId) {
+        UserHasWorkouts savedUserHasWorkout = userService.createScheduledWorkout(userHasWorkout, userId, workoutId);
+        return new ResponseEntity<>(savedUserHasWorkout.getId(), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

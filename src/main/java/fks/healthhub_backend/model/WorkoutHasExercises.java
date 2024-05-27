@@ -24,8 +24,9 @@ public class WorkoutHasExercises {
     @JsonIgnore
     private Workout workout;
 
-    @ManyToOne
-    @JoinColumn(name = "exercise_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "exercise_id", referencedColumnName = "id")
+    @JsonIgnore
     private Exercise exercise;
 
     @Column(name = "sets")
@@ -39,7 +40,6 @@ public class WorkoutHasExercises {
 
     @Column(name = "rest_time")
     private int restTime;
-
 
     @Override
     public boolean equals(Object o) {

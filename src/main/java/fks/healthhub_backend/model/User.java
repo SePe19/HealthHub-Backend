@@ -7,7 +7,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Getter
@@ -25,6 +27,9 @@ public class User {
     @NonNull
     @Column(name = "username")
     private String username;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<UserHasWorkouts> userHasWorkouts = new HashSet<>();
 
     public User(){}
 

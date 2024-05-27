@@ -1,5 +1,6 @@
 package fks.healthhub_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import java.util.Objects;
 public class Exercise {
 
     @Id
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonProperty("id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
@@ -34,6 +35,11 @@ public class Exercise {
 
     public Exercise(){}
 
+    @JsonCreator
+    public Exercise(@JsonProperty("id") Long id) {
+        this.id = id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -46,5 +52,4 @@ public class Exercise {
     public int hashCode() {
         return Objects.hash(id);
     }
-
 }
