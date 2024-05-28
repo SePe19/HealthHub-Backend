@@ -1,6 +1,6 @@
 package fks.healthhub_backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -38,12 +38,16 @@ public class Workout {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnore
+    @JsonIgnoreProperties("userHasWorkouts")
     private User user;
 
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("workout")
     private Set<WorkoutHasExercises> workoutHasExercises = new HashSet<>();
 
+    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties("workout")
+    private Set<UserHasWorkouts> userHasWorkouts = new HashSet<>();
 
     public Workout(){}
 
@@ -59,5 +63,4 @@ public class Workout {
     public int hashCode() {
         return Objects.hash(id);
     }
-
 }

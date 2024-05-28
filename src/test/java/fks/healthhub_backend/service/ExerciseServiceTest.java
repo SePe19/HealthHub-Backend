@@ -18,7 +18,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ExerciseServiceTest {
+class ExerciseServiceTest implements AutoCloseable {
 
     @Mock
     private ExerciseRepository exerciseRepository;
@@ -29,9 +29,16 @@ class ExerciseServiceTest {
     @InjectMocks
     private ExerciseService exerciseService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @Override
+    public void close() throws Exception {
+        mocks.close();
     }
 
     @Test
@@ -63,9 +70,7 @@ class ExerciseServiceTest {
         when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.empty());
 
         // Act
-        Exception exception = assertThrows(NoResultException.class, () -> {
-            exerciseService.getExercise(exerciseId);
-        });
+        NoResultException exception = assertThrows(NoResultException.class, () -> exerciseService.getExercise(exerciseId));
 
         // Assert
         assertEquals("Exercise with id: 1 does not exist", exception.getMessage());

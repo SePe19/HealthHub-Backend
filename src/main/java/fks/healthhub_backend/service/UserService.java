@@ -2,6 +2,7 @@ package fks.healthhub_backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.UserHasWorkouts;
 import fks.healthhub_backend.model.Workout;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -37,9 +39,11 @@ public class UserService {
         return objectMapper.valueToTree(user);
     }
 
-    public List<User> getAllUsers(){
+    public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
-        return users;
+        return users.stream()
+                .map(user -> new UserDTO(user.getId(), user.getUsername()))
+                .collect(Collectors.toList());
     }
 
     @SneakyThrows
@@ -49,8 +53,7 @@ public class UserService {
     }
 
     public List<Workout> getAllWorkoutsByUser(Long userId){
-        List<Workout> workouts = userRepository.findWorkoutsByUserId(userId);
-        return workouts;
+        return userRepository.findWorkoutsByUserId(userId);
     }
 
     public void createUser(User user) {
@@ -63,10 +66,6 @@ public class UserService {
 
     @SneakyThrows
     public UserHasWorkouts createScheduledWorkout(UserHasWorkouts userHasWorkout, Long userId, Long workoutId) {
-        System.out.println(userId);
-        System.out.println(workoutId);
-        System.out.println(userHasWorkout.getScheduledAt().toString());
-        System.out.println(userHasWorkout.getCompleted().toString());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new Exception("User not found with ID: " + userId));
         Workout workout = workoutRepository.findById(workoutId)

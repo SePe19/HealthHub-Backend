@@ -20,7 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class WorkoutServiceTest {
+class WorkoutServiceTest implements AutoCloseable {
 
     @Mock
     private WorkoutRepository workoutRepository;
@@ -34,9 +34,16 @@ class WorkoutServiceTest {
     @InjectMocks
     private WorkoutService workoutService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @Override
+    public void close() throws Exception {
+        mocks.close();
     }
 
     @Test
@@ -68,9 +75,7 @@ class WorkoutServiceTest {
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
 
         // Act
-        Exception exception = assertThrows(NoResultException.class, () -> {
-            workoutService.getWorkout(workoutId);
-        });
+        NoResultException exception = assertThrows(NoResultException.class, () -> workoutService.getWorkout(workoutId));
 
         // Assert
         assertEquals("Workout with id: 1 does not exist", exception.getMessage());
@@ -149,9 +154,7 @@ class WorkoutServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // Act
-        Exception exception = assertThrows(Exception.class, () -> {
-            workoutService.createWorkout(workout, userId);
-        });
+        Exception exception = assertThrows(Exception.class, () -> workoutService.createWorkout(workout, userId));
 
         // Assert
         assertEquals("User not found with ID: 1", exception.getMessage());
@@ -197,9 +200,7 @@ class WorkoutServiceTest {
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
 
         // Act
-        Exception exception = assertThrows(NoResultException.class, () -> {
-            workoutService.updateWorkout(workoutId, updatedWorkout, userId);
-        });
+        Exception exception = assertThrows(NoResultException.class, () -> workoutService.updateWorkout(workoutId, updatedWorkout, userId));
 
         // Assert
         assertEquals("Workout with ID: 1 could not be found", exception.getMessage());

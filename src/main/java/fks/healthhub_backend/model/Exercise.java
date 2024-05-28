@@ -1,6 +1,5 @@
 package fks.healthhub_backend.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,11 +33,6 @@ public class Exercise {
     private ExerciseDifficulty exerciseDifficulty;
 
     public Exercise(){}
-
-    @JsonCreator
-    public Exercise(@JsonProperty("id") Long id) {
-        this.id = id;
-    }
 
     @Override
     public boolean equals(Object o) {

@@ -1,6 +1,7 @@
 package fks.healthhub_backend.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.UserHasWorkouts;
 import fks.healthhub_backend.service.UserService;
@@ -29,13 +30,13 @@ public class UserController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<User>> allUsers() {
-        List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}/scheduled-workouts")
-    public ResponseEntity<JsonNode> plannedWorkout(@PathVariable Long id) {
+    public ResponseEntity<JsonNode> scheduledWorkout(@PathVariable Long id) {
         JsonNode workout = userService.getScheduledWorkouts(id);
         return new ResponseEntity<>(workout, HttpStatus.OK);
     }
