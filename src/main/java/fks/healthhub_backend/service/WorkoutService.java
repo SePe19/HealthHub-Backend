@@ -2,6 +2,9 @@ package fks.healthhub_backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fks.healthhub_backend.dto.UserDTO;
+import fks.healthhub_backend.dto.WorkoutDTO;
+import fks.healthhub_backend.dto.WorkoutHasExercisesDTO;
 import fks.healthhub_backend.model.Exercise;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.Workout;
@@ -16,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class WorkoutService {
@@ -37,10 +42,24 @@ public class WorkoutService {
     }
 
     @SneakyThrows
-    public JsonNode getWorkout(Long id){
-        Workout workout = workoutRepository.findById(id).orElseThrow(()
-                -> new NoResultException("Workout with id: " + id + " does not exist"));
-        return objectMapper.valueToTree(workout);
+    public JsonNode getWorkout(Long id) {
+        Workout workout = workoutRepository.findById(id).orElseThrow(() ->
+                new NoResultException("Workout with id: " + id + " does not exist"));
+
+        WorkoutDTO workoutDTO = new WorkoutDTO();
+        workoutDTO.setId(workout.getId());
+        workoutDTO.setTitle(workout.getTitle());
+        workoutDTO.setDescription(workout.getDescription());
+        workoutDTO.setWorkoutType(workout.getWorkoutType());
+
+        Set<WorkoutHasExercisesDTO> workoutHasExercisesDTOs = workout.getWorkoutHasExercises()
+                .stream()
+                .map(WorkoutHasExercisesMapper::toDto)
+                .collect(Collectors.toSet());
+        workoutDTO.setWorkoutHasExercises(workoutHasExercisesDTOs);
+
+        workoutDTO.setUser(new UserDTO(workout.getUser().getId(), workout.getUser().getUsername()));
+        return objectMapper.valueToTree(workoutDTO);
     }
 
     public List<Workout> getAllWorkouts(){
@@ -93,5 +112,17 @@ public class WorkoutService {
 
     public void deleteWorkout(Long id) {
         workoutRepository.deleteById(id);
+    }
+
+    public class WorkoutHasExercisesMapper {
+        public static WorkoutHasExercisesDTO toDto(WorkoutHasExercises entity) {
+            WorkoutHasExercisesDTO dto = new WorkoutHasExercisesDTO();
+            dto.setId(entity.getId());
+            dto.setSets(entity.getSets());
+            dto.setRepetitions(entity.getRepetitions());
+            dto.setWeight(entity.getWeight());
+            dto.setRestTime(entity.getRestTime());
+            return dto;
+        }
     }
 }

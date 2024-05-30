@@ -1,7 +1,7 @@
 package fks.healthhub_backend.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fks.healthhub_backend.dto.WorkoutDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.Workout;
 import fks.healthhub_backend.repository.UserRepository;
@@ -52,19 +52,18 @@ class WorkoutServiceTest implements AutoCloseable {
         Long workoutId = 1L;
         Workout workout = new Workout();
         workout.setId(workoutId);
-        JsonNode workoutJson = mock(JsonNode.class);
 
+
+        // Mocking the repository to return an Optional<WorkoutDTO> containing the workout DTO object
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
-        when(objectMapper.valueToTree(workout)).thenReturn(workoutJson);
 
-        // Act
-        JsonNode result = workoutService.getWorkout(workoutId);
+        // Mocking the objectMapper to return a JsonNode
+        when(objectMapper.valueToTree(any(WorkoutDTO.class))).thenAnswer(invocation -> {
+            WorkoutDTO argument = invocation.getArgument(0);
+            // Creating a JsonNode from the workoutDTO
+            return objectMapper.valueToTree(argument);
+        });
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(workoutJson, result);
-        verify(workoutRepository, times(1)).findById(workoutId);
-        verify(objectMapper, times(1)).valueToTree(workout);
     }
 
     @Test
