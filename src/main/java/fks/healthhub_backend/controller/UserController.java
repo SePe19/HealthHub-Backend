@@ -36,8 +36,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/scheduled-workouts")
-    public ResponseEntity<JsonNode> scheduledWorkout(@PathVariable Long id) {
+    public ResponseEntity<JsonNode> getScheduledWorkout(@PathVariable Long id) {
         JsonNode workout = userService.getScheduledWorkouts(id);
+        return new ResponseEntity<>(workout, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/workout-completion")
+    public ResponseEntity<JsonNode> getWorkoutCompletion(@PathVariable Long id) {
+        JsonNode workout = userService.getWorkoutCompletion(id);
         return new ResponseEntity<>(workout, HttpStatus.OK);
     }
 
