@@ -6,7 +6,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Getter
@@ -31,6 +34,12 @@ public class Exercise {
     @Enumerated(EnumType.STRING)
     @Column(name = "exercise_difficulty")
     private ExerciseDifficulty exerciseDifficulty;
+
+    @ElementCollection(targetClass = MuscleGroup.class)
+    @CollectionTable(name = "exercise_muscle_groups", joinColumns = @JoinColumn(name = "exercise_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "muscle_group")
+    private Set<MuscleGroup> muscleGroups = new HashSet<>();
 
     public Exercise(){}
 
