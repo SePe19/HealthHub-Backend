@@ -161,99 +161,95 @@ class UserServiceTest implements AutoCloseable {
 
     @Test
     void getWorkoutCompletion() {
-        // Arrange
         Long userId = 1L;
         UserHasWorkouts workout1 = new UserHasWorkouts();
         workout1.setCompleted(true);
+        workout1.setScheduledAt(ZonedDateTime.now().minusDays(10));
         UserHasWorkouts workout2 = new UserHasWorkouts();
         workout2.setCompleted(false);
+        workout2.setScheduledAt(ZonedDateTime.now().minusDays(20));
         UserHasWorkouts workout3 = new UserHasWorkouts();
         workout3.setCompleted(true);
+        workout3.setScheduledAt(ZonedDateTime.now().minusDays(30));
 
         List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2, workout3);
 
-        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(workouts);
 
-        // Act
-        JsonNode result = userService.getWorkoutCompletion(userId);
+        JsonNode result = userService.getWorkoutCompletion(userId, 90);
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.get("complete").asInt());
         assertEquals(1, result.get("incomplete").asInt());
-        assertEquals(67, result.get("percentage").asInt()); // 2/3 * 100 = 66.67 rounded to 67
+        assertEquals(67, result.get("percentage").asInt());
 
-        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class));
     }
 
     @Test
     void getWorkoutCompletion_noCompletedWorkouts() {
-        // Arrange
         Long userId = 2L;
         UserHasWorkouts workout1 = new UserHasWorkouts();
         workout1.setCompleted(false);
+        workout1.setScheduledAt(ZonedDateTime.now().minusDays(10));
         UserHasWorkouts workout2 = new UserHasWorkouts();
         workout2.setCompleted(false);
+        workout2.setScheduledAt(ZonedDateTime.now().minusDays(20));
 
         List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2);
 
-        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(workouts);
 
-        // Act
-        JsonNode result = userService.getWorkoutCompletion(userId);
+        JsonNode result = userService.getWorkoutCompletion(userId, 90);
 
-        // Assert
         assertNotNull(result);
         assertEquals(0, result.get("complete").asInt());
         assertEquals(2, result.get("incomplete").asInt());
-        assertEquals(0, result.get("percentage").asInt()); // 0/2 * 100 = 0
+        assertEquals(0, result.get("percentage").asInt());
 
-        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class));
     }
 
     @Test
     void getWorkoutCompletion_noIncompleteWorkouts() {
-        // Arrange
         Long userId = 3L;
         UserHasWorkouts workout1 = new UserHasWorkouts();
         workout1.setCompleted(true);
+        workout1.setScheduledAt(ZonedDateTime.now().minusDays(10));
         UserHasWorkouts workout2 = new UserHasWorkouts();
         workout2.setCompleted(true);
+        workout2.setScheduledAt(ZonedDateTime.now().minusDays(20));
 
         List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2);
 
-        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(workouts);
 
-        // Act
-        JsonNode result = userService.getWorkoutCompletion(userId);
+        JsonNode result = userService.getWorkoutCompletion(userId, 90);
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.get("complete").asInt());
         assertEquals(0, result.get("incomplete").asInt());
-        assertEquals(100, result.get("percentage").asInt()); // 2/2 * 100 = 100
+        assertEquals(100, result.get("percentage").asInt());
 
-        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class));
     }
 
     @Test
     void getWorkoutCompletion_noWorkouts() {
-        // Arrange
         Long userId = 4L;
 
-        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(List.of());
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(List.of());
 
-        // Act
-        JsonNode result = userService.getWorkoutCompletion(userId);
+        JsonNode result = userService.getWorkoutCompletion(userId, 90);
 
-        // Assert
         assertNotNull(result);
         assertEquals(0, result.get("complete").asInt());
         assertEquals(0, result.get("incomplete").asInt());
-        assertEquals(0, result.get("percentage").asInt()); // 0 workouts means 0 percentage
+        assertEquals(0, result.get("percentage").asInt());
 
-        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class));
     }
+
 
     @Test
     void getWorkoutFavourite_allTypesPresent() {

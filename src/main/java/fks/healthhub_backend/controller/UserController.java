@@ -42,8 +42,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}/workout-completion")
-    public ResponseEntity<JsonNode> getWorkoutCompletion(@PathVariable Long id) {
-        JsonNode completion = userService.getWorkoutCompletion(id);
+    public ResponseEntity<JsonNode> getWorkoutCompletion(@PathVariable Long id, @RequestParam int days) {
+        JsonNode completion = userService.getWorkoutCompletion(id, days);
         return new ResponseEntity<>(completion, HttpStatus.OK);
     }
 

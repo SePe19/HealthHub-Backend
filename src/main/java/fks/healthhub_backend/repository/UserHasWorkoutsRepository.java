@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
@@ -12,4 +13,7 @@ import java.util.List;
 public interface UserHasWorkoutsRepository extends JpaRepository<UserHasWorkouts, Long> {
 
     List<UserHasWorkouts> findByUserId(Long userId);
+
+    List<UserHasWorkouts> findByUserIdAndScheduledAtAfter(Long user_id, ZonedDateTime scheduledAt);
+
 }

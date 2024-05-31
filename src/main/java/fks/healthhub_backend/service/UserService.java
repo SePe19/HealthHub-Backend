@@ -16,6 +16,7 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,8 +59,10 @@ public class UserService {
         return userRepository.findWorkoutsByUserId(userId);
     }
 
-    public JsonNode getWorkoutCompletion(Long userId) {
-        List<UserHasWorkouts> workouts = userHasWorkoutsRepository.findByUserId(userId);
+    public JsonNode getWorkoutCompletion(Long userId, int lookBackDays) {
+        ZonedDateTime lookBackDate = ZonedDateTime.now().minusDays(lookBackDays);
+
+        List<UserHasWorkouts> workouts = userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(userId, lookBackDate);
         int trueCount = 0;
         int falseCount = 0;
 
