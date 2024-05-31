@@ -159,6 +159,102 @@ class UserServiceTest implements AutoCloseable {
     }
 
     @Test
+    void getWorkoutCompletion() {
+        // Arrange
+        Long userId = 1L;
+        UserHasWorkouts workout1 = new UserHasWorkouts();
+        workout1.setCompleted(true);
+        UserHasWorkouts workout2 = new UserHasWorkouts();
+        workout2.setCompleted(false);
+        UserHasWorkouts workout3 = new UserHasWorkouts();
+        workout3.setCompleted(true);
+
+        List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2, workout3);
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+
+        // Act
+        JsonNode result = userService.getWorkoutCompletion(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.get("complete").asInt());
+        assertEquals(1, result.get("incomplete").asInt());
+        assertEquals(67, result.get("percentage").asInt()); // 2/3 * 100 = 66.67 rounded to 67
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void getWorkoutCompletion_noCompletedWorkouts() {
+        // Arrange
+        Long userId = 2L;
+        UserHasWorkouts workout1 = new UserHasWorkouts();
+        workout1.setCompleted(false);
+        UserHasWorkouts workout2 = new UserHasWorkouts();
+        workout2.setCompleted(false);
+
+        List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2);
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+
+        // Act
+        JsonNode result = userService.getWorkoutCompletion(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.get("complete").asInt());
+        assertEquals(2, result.get("incomplete").asInt());
+        assertEquals(0, result.get("percentage").asInt()); // 0/2 * 100 = 0
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void getWorkoutCompletion_noIncompleteWorkouts() {
+        // Arrange
+        Long userId = 3L;
+        UserHasWorkouts workout1 = new UserHasWorkouts();
+        workout1.setCompleted(true);
+        UserHasWorkouts workout2 = new UserHasWorkouts();
+        workout2.setCompleted(true);
+
+        List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2);
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+
+        // Act
+        JsonNode result = userService.getWorkoutCompletion(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.get("complete").asInt());
+        assertEquals(0, result.get("incomplete").asInt());
+        assertEquals(100, result.get("percentage").asInt()); // 2/2 * 100 = 100
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void getWorkoutCompletion_noWorkouts() {
+        // Arrange
+        Long userId = 4L;
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(List.of());
+
+        // Act
+        JsonNode result = userService.getWorkoutCompletion(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.get("complete").asInt());
+        assertEquals(0, result.get("incomplete").asInt());
+        assertEquals(0, result.get("percentage").asInt()); // 0 workouts means 0 percentage
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
     void createUser() {
         // Arrange
         User user = new User();

@@ -2,6 +2,7 @@ package fks.healthhub_backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.UserHasWorkouts;
@@ -54,6 +55,31 @@ public class UserService {
 
     public List<Workout> getAllWorkoutsByUser(Long userId){
         return userRepository.findWorkoutsByUserId(userId);
+    }
+
+    public JsonNode getWorkoutCompletion(Long userId) {
+        List<UserHasWorkouts> workouts = userHasWorkoutsRepository.findByUserId(userId);
+        int trueCount = 0;
+        int falseCount = 0;
+
+        for (UserHasWorkouts workout : workouts) {
+            if (workout.getCompleted()) {
+                trueCount++;
+            } else {
+                falseCount++;
+            }
+        }
+
+        int totalCount = trueCount + falseCount;
+        int percentage = (totalCount > 0) ? (int) Math.round(((double) trueCount / totalCount) * 100) : 0;
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode resultNode = objectMapper.createObjectNode();
+        resultNode.put("complete", trueCount);
+        resultNode.put("incomplete", falseCount);
+        resultNode.put("percentage", percentage);
+
+        return resultNode;
     }
 
     public void createUser(User user) {
