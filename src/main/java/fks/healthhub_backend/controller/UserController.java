@@ -43,8 +43,14 @@ public class UserController {
 
     @GetMapping("/{id}/workout-completion")
     public ResponseEntity<JsonNode> getWorkoutCompletion(@PathVariable Long id) {
-        JsonNode workout = userService.getWorkoutCompletion(id);
-        return new ResponseEntity<>(workout, HttpStatus.OK);
+        JsonNode completion = userService.getWorkoutCompletion(id);
+        return new ResponseEntity<>(completion, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/workout-favourite")
+    public ResponseEntity<JsonNode> getWorkoutFavourite(@PathVariable Long id) {
+        JsonNode favourites = userService.getWorkoutFavourite(id);
+        return new ResponseEntity<>(favourites, HttpStatus.OK);
     }
 
     @PostMapping("/")

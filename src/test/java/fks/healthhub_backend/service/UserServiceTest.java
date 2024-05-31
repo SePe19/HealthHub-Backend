@@ -6,6 +6,7 @@ import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.UserHasWorkouts;
 import fks.healthhub_backend.model.Workout;
+import fks.healthhub_backend.model.WorkoutType;
 import fks.healthhub_backend.repository.UserHasWorkoutsRepository;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
@@ -250,6 +251,133 @@ class UserServiceTest implements AutoCloseable {
         assertEquals(0, result.get("complete").asInt());
         assertEquals(0, result.get("incomplete").asInt());
         assertEquals(0, result.get("percentage").asInt()); // 0 workouts means 0 percentage
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void getWorkoutFavourite_allTypesPresent() {
+        // Arrange
+        Long userId = 1L;
+        UserHasWorkouts workout1 = new UserHasWorkouts();
+        workout1.setCompleted(true);
+        Workout workoutType1 = new Workout();
+        workoutType1.setWorkoutType(WorkoutType.STRENGTH);
+        workout1.setWorkout(workoutType1);
+
+        UserHasWorkouts workout2 = new UserHasWorkouts();
+        workout2.setCompleted(true);
+        Workout workoutType2 = new Workout();
+        workoutType2.setWorkoutType(WorkoutType.CARDIO);
+        workout2.setWorkout(workoutType2);
+
+        UserHasWorkouts workout3 = new UserHasWorkouts();
+        workout3.setCompleted(true);
+        Workout workoutType3 = new Workout();
+        workoutType3.setWorkoutType(WorkoutType.MOBILITY);
+        workout3.setWorkout(workoutType3);
+
+        List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2, workout3);
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+
+        // Act
+        JsonNode result = userService.getWorkoutFavourite(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.get("STRENGTH").asInt());
+        assertEquals(1, result.get("CARDIO").asInt());
+        assertEquals(1, result.get("MOBILITY").asInt());
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void getWorkoutFavourite_noCompletedWorkouts() {
+        // Arrange
+        Long userId = 2L;
+        UserHasWorkouts workout1 = new UserHasWorkouts();
+        workout1.setCompleted(false);
+        Workout workoutType1 = new Workout();
+        workoutType1.setWorkoutType(WorkoutType.STRENGTH);
+        workout1.setWorkout(workoutType1);
+
+        UserHasWorkouts workout2 = new UserHasWorkouts();
+        workout2.setCompleted(false);
+        Workout workoutType2 = new Workout();
+        workoutType2.setWorkoutType(WorkoutType.CARDIO);
+        workout2.setWorkout(workoutType2);
+
+        List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2);
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+
+        // Act
+        JsonNode result = userService.getWorkoutFavourite(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.get("STRENGTH").asInt());
+        assertEquals(0, result.get("CARDIO").asInt());
+        assertEquals(0, result.get("MOBILITY").asInt());
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void getWorkoutFavourite_mixedWorkoutTypes() {
+        // Arrange
+        Long userId = 3L;
+        UserHasWorkouts workout1 = new UserHasWorkouts();
+        workout1.setCompleted(true);
+        Workout workoutType1 = new Workout();
+        workoutType1.setWorkoutType(WorkoutType.STRENGTH);
+        workout1.setWorkout(workoutType1);
+
+        UserHasWorkouts workout2 = new UserHasWorkouts();
+        workout2.setCompleted(true);
+        Workout workoutType2 = new Workout();
+        workoutType2.setWorkoutType(WorkoutType.STRENGTH);
+        workout2.setWorkout(workoutType2);
+
+        UserHasWorkouts workout3 = new UserHasWorkouts();
+        workout3.setCompleted(true);
+        Workout workoutType3 = new Workout();
+        workoutType3.setWorkoutType(WorkoutType.MOBILITY);
+        workout3.setWorkout(workoutType3);
+
+        List<UserHasWorkouts> workouts = Arrays.asList(workout1, workout2, workout3);
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(workouts);
+
+        // Act
+        JsonNode result = userService.getWorkoutFavourite(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.get("STRENGTH").asInt());
+        assertEquals(0, result.get("CARDIO").asInt());
+        assertEquals(1, result.get("MOBILITY").asInt());
+
+        verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void getWorkoutFavourite_noWorkouts() {
+        // Arrange
+        Long userId = 4L;
+
+        when(userHasWorkoutsRepository.findByUserId(userId)).thenReturn(List.of());
+
+        // Act
+        JsonNode result = userService.getWorkoutFavourite(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.get("STRENGTH").asInt());
+        assertEquals(0, result.get("CARDIO").asInt());
+        assertEquals(0, result.get("MOBILITY").asInt());
 
         verify(userHasWorkoutsRepository, times(1)).findByUserId(userId);
     }

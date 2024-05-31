@@ -7,6 +7,7 @@ import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.UserHasWorkouts;
 import fks.healthhub_backend.model.Workout;
+import fks.healthhub_backend.model.WorkoutType;
 import fks.healthhub_backend.repository.UserHasWorkoutsRepository;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
@@ -78,6 +79,32 @@ public class UserService {
         resultNode.put("complete", trueCount);
         resultNode.put("incomplete", falseCount);
         resultNode.put("percentage", percentage);
+
+        return resultNode;
+    }
+
+    public JsonNode getWorkoutFavourite(Long userId) {
+        List<UserHasWorkouts> workouts = userHasWorkoutsRepository.findByUserId(userId);
+        int strengthCount = 0;
+        int cardioCount = 0;
+        int mobilityCount = 0;
+
+        for (UserHasWorkouts workout : workouts) {
+            if (workout.getCompleted()) {
+                WorkoutType type = workout.getWorkout().getWorkoutType();
+                switch (type) {
+                    case STRENGTH -> strengthCount++;
+                    case CARDIO -> cardioCount++;
+                    case MOBILITY -> mobilityCount++;
+                }
+            }
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode resultNode = objectMapper.createObjectNode();
+        resultNode.put("STRENGTH", strengthCount);
+        resultNode.put("CARDIO", cardioCount);
+        resultNode.put("MOBILITY", mobilityCount);
 
         return resultNode;
     }
