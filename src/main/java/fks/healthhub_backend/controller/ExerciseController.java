@@ -2,6 +2,7 @@ package fks.healthhub_backend.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fks.healthhub_backend.model.Exercise;
+import fks.healthhub_backend.model.MuscleGroup;
 import fks.healthhub_backend.service.ExerciseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,5 +32,11 @@ public class ExerciseController {
     public ResponseEntity<List<Exercise>> allExercises() {
         List<Exercise> exercises = exerciseService.getAllExercises();
         return new ResponseEntity<>(exercises, HttpStatus.OK);
+    }
+
+    @GetMapping("/muscle-groups")
+    public ResponseEntity<List<MuscleGroup>> muscleGroups() {
+        List<MuscleGroup> muscleGroups = List.of(MuscleGroup.values());
+        return new ResponseEntity<>(muscleGroups, HttpStatus.OK);
     }
 }

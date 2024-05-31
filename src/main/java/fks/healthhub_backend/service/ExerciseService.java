@@ -3,11 +3,15 @@ package fks.healthhub_backend.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fks.healthhub_backend.model.Exercise;
+import fks.healthhub_backend.model.MuscleGroup;
 import fks.healthhub_backend.repository.ExerciseRepository;
 import jakarta.persistence.NoResultException;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -30,7 +34,12 @@ public class ExerciseService {
     }
 
     public List<Exercise> getAllExercises(){
-        List<Exercise> exercises = exerciseRepository.findAll();
-        return exercises;
+        return exerciseRepository.findAll();
+    }
+
+    @GetMapping("/muscle-groups")
+    public ResponseEntity<List<MuscleGroup>> muscleGroups() {
+        List<MuscleGroup> workoutTypes = List.of(MuscleGroup.values());
+        return new ResponseEntity<>(workoutTypes, HttpStatus.OK);
     }
 }
