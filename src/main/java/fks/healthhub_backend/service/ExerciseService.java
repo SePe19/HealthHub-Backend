@@ -8,10 +8,7 @@ import fks.healthhub_backend.repository.ExerciseRepository;
 import jakarta.persistence.NoResultException;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -37,9 +34,10 @@ public class ExerciseService {
         return exerciseRepository.findAll();
     }
 
-    @GetMapping("/muscle-groups")
-    public ResponseEntity<List<MuscleGroup>> muscleGroups() {
-        List<MuscleGroup> workoutTypes = List.of(MuscleGroup.values());
-        return new ResponseEntity<>(workoutTypes, HttpStatus.OK);
+    public List<Exercise> getExercisesByMuscleGroup(MuscleGroup muscleGroup) {
+        if (muscleGroup == null) {
+            throw new IllegalArgumentException("Muscle group cannot be null");
+        }
+        return exerciseRepository.findAllByMuscleGroup(muscleGroup);
     }
 }

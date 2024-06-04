@@ -3,6 +3,7 @@ package fks.healthhub_backend.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fks.healthhub_backend.model.Exercise;
+import fks.healthhub_backend.model.MuscleGroup;
 import fks.healthhub_backend.repository.ExerciseRepository;
 import jakarta.persistence.NoResultException;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -95,5 +97,64 @@ class ExerciseServiceTest implements AutoCloseable {
         assertEquals(2, result.size());
         assertEquals(exercises, result);
         verify(exerciseRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getAllExercises_empty() {
+        // Arrange
+        when(exerciseRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Exercise> result = exerciseService.getAllExercises();
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(exerciseRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getExercisesByMuscleGroup() {
+        // Arrange
+        MuscleGroup muscleGroup = MuscleGroup.CHEST;
+        Exercise exercise1 = new Exercise();
+        Exercise exercise2 = new Exercise();
+        List<Exercise> exercises = Arrays.asList(exercise1, exercise2);
+
+        when(exerciseRepository.findAllByMuscleGroup(muscleGroup)).thenReturn(exercises);
+
+        // Act
+        List<Exercise> result = exerciseService.getExercisesByMuscleGroup(muscleGroup);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(exercises, result);
+        verify(exerciseRepository, times(1)).findAllByMuscleGroup(muscleGroup);
+    }
+
+    @Test
+    void getExercisesByMuscleGroup_empty() {
+        // Arrange
+        MuscleGroup muscleGroup = MuscleGroup.CHEST;
+
+        when(exerciseRepository.findAllByMuscleGroup(muscleGroup)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Exercise> result = exerciseService.getExercisesByMuscleGroup(muscleGroup);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(exerciseRepository, times(1)).findAllByMuscleGroup(muscleGroup);
+    }
+
+    @Test
+    void getExercisesByMuscleGroup_invalidGroup() {
+        // Arrange
+        MuscleGroup muscleGroup = null;
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> exerciseService.getExercisesByMuscleGroup(muscleGroup));
     }
 }

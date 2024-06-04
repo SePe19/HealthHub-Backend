@@ -36,7 +36,9 @@ public class Exercise {
     private ExerciseDifficulty exerciseDifficulty;
 
     @ElementCollection(targetClass = MuscleGroup.class)
-    @CollectionTable(name = "exercise_muscle_groups", joinColumns = @JoinColumn(name = "exercise_id"))
+    @CollectionTable(name = "exercise_muscle_groups", joinColumns = @JoinColumn(name = "exercise_id"),
+            indexes = {@Index(name = "idx_exercise_id", columnList = "exercise_id"),
+                    @Index(name = "idx_muscle_group", columnList = "muscle_group")})
     @Enumerated(EnumType.STRING)
     @Column(name = "muscle_group")
     private Set<MuscleGroup> muscleGroups = new HashSet<>();

@@ -1,6 +1,7 @@
 package fks.healthhub_backend.repository;
 
 import fks.healthhub_backend.model.Exercise;
+import fks.healthhub_backend.model.MuscleGroup;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
 
     @Query("SELECT e FROM Exercise e WHERE e.id IN :ids")
     List<Exercise> findByIdIn(@Param("ids") List<Long> ids);
+
+    @Query("SELECT e FROM Exercise e JOIN FETCH e.muscleGroups mg WHERE mg = :muscleGroup")
+    List<Exercise> findAllByMuscleGroup(@Param("muscleGroup") MuscleGroup muscleGroup);
 }
