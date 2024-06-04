@@ -39,4 +39,10 @@ public class ExerciseController {
         List<MuscleGroup> muscleGroups = List.of(MuscleGroup.values());
         return new ResponseEntity<>(muscleGroups, HttpStatus.OK);
     }
+
+    @GetMapping("/exercises-by-muscle-group")
+    public ResponseEntity<List<Exercise>> getExercisesByMuscleGroup(@RequestParam MuscleGroup muscleGroup) {
+        List<Exercise> exercises = exerciseService.getExercisesByMuscleGroup(muscleGroup);
+        return new ResponseEntity<>(exercises, HttpStatus.OK);
+    }
 }
