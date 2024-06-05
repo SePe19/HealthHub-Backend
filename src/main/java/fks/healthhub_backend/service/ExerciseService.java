@@ -40,4 +40,8 @@ public class ExerciseService {
         }
         return exerciseRepository.findAllByMuscleGroup(muscleGroup);
     }
+
+    public List<Exercise> getExercisesByTitle(String title) {
+        return exerciseRepository.findByTitleContaining(title);
+    }
 }
