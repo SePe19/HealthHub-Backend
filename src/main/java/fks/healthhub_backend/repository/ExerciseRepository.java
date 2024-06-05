@@ -19,4 +19,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
 
     @Query("SELECT e FROM Exercise e JOIN FETCH e.muscleGroups mg WHERE mg = :muscleGroup")
     List<Exercise> findAllByMuscleGroup(@Param("muscleGroup") MuscleGroup muscleGroup);
+
+    @Query("SELECT e FROM Exercise e WHERE LOWER(e.title) LIKE LOWER(CONCAT('%', :title, '%'))")
+    List<Exercise> findByTitleContaining(@Param("title") String title);
 }

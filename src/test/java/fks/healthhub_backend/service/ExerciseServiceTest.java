@@ -157,4 +157,64 @@ class ExerciseServiceTest implements AutoCloseable {
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> exerciseService.getExercisesByMuscleGroup(muscleGroup));
     }
+
+    @Test
+    void getExercisesByTitle() {
+        // Arrange
+        String title = "push";
+        Exercise exercise1 = new Exercise();
+        exercise1.setTitle("Push Up");
+        Exercise exercise2 = new Exercise();
+        exercise2.setTitle("Push Down");
+        List<Exercise> exercises = Arrays.asList(exercise1, exercise2);
+
+        when(exerciseRepository.findByTitleContaining(title)).thenReturn(exercises);
+
+        // Act
+        List<Exercise> result = exerciseService.getExercisesByTitle(title);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(exercises, result);
+        verify(exerciseRepository, times(1)).findByTitleContaining(title);
+    }
+
+    @Test
+    void getExercisesByTitle_noMatch() {
+        // Arrange
+        String title = "xyz";
+        List<Exercise> exercises = Collections.emptyList();
+
+        when(exerciseRepository.findByTitleContaining(title)).thenReturn(exercises);
+
+        // Act
+        List<Exercise> result = exerciseService.getExercisesByTitle(title);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        assertEquals(exercises, result);
+        verify(exerciseRepository, times(1)).findByTitleContaining(title);
+    }
+
+    @Test
+    void getExercisesByTitle_emptyString() {
+        // Arrange
+        String title = "";
+        Exercise exercise1 = new Exercise();
+        Exercise exercise2 = new Exercise();
+        List<Exercise> exercises = Arrays.asList(exercise1, exercise2);
+
+        when(exerciseRepository.findByTitleContaining(title)).thenReturn(exercises);
+
+        // Act
+        List<Exercise> result = exerciseService.getExercisesByTitle(title);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(exercises, result);
+        verify(exerciseRepository, times(1)).findByTitleContaining(title);
+    }
 }

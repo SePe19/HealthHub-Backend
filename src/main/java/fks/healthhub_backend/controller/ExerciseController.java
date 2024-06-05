@@ -45,4 +45,10 @@ public class ExerciseController {
         List<Exercise> exercises = exerciseService.getExercisesByMuscleGroup(muscleGroup);
         return new ResponseEntity<>(exercises, HttpStatus.OK);
     }
+
+    @GetMapping("/exercises-by-title")
+    public ResponseEntity<List<Exercise>> getExercisesByTitle(@RequestParam String title) {
+        List<Exercise> exercises = exerciseService.getExercisesByTitle(title);
+        return new ResponseEntity<>(exercises, HttpStatus.OK);
+    }
 }
