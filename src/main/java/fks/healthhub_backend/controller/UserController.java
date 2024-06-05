@@ -70,4 +70,11 @@ public class UserController {
         userService.updateUser(id, user);
         return ResponseEntity.ok().body(id);
     }
+
+    @DeleteMapping("/scheduled-workouts/{userHasWorkoutsId}")
+    public ResponseEntity<Void> deleteScheduledWorkout(@PathVariable Long userHasWorkoutsId) {
+        userService.deleteScheduledWorkout(userHasWorkoutsId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

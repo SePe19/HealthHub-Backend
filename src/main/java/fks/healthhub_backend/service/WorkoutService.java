@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,13 +64,11 @@ public class WorkoutService {
     }
 
     public List<Workout> getAllWorkouts(){
-        List<Workout> workouts = workoutRepository.findAll();
-        return workouts;
+        return workoutRepository.findAll();
     }
 
     public List<Workout> getAllWorkoutsByUser(Long userId){
-        List<Workout> workouts = workoutRepository.findWorkoutsByUserId(userId);
-        return workouts;
+        return workoutRepository.findWorkoutsByUserId(userId);
     }
 
     @SneakyThrows
@@ -110,19 +109,45 @@ public class WorkoutService {
         workoutRepository.save(workout);
     }
 
-    public void deleteWorkout(Long id) {
-        workoutRepository.deleteById(id);
+
+
+    public void deleteWorkoutExercise(Long workoutId, Long exerciseId) {
+        Optional<WorkoutHasExercises> workoutHasExercisesOptional = workoutHasExercisesRepository.findByWorkoutIdAndExerciseId(workoutId, exerciseId);
+        if (workoutHasExercisesOptional.isPresent()) {
+            workoutHasExercisesRepository.delete(workoutHasExercisesOptional.get());
+        } else {
+            throw new NoResultException("Exercise with ID: " + exerciseId + " in Workout with ID: " + workoutId + " could not be found");
+        }
     }
 
-    public class WorkoutHasExercisesMapper {
-        public static WorkoutHasExercisesDTO toDto(WorkoutHasExercises entity) {
+    public void deleteWorkout(Long workoutId) {
+        Optional<Workout> workoutOptional = workoutRepository.findById(workoutId);
+        if (workoutOptional.isPresent()) {
+            workoutRepository.delete(workoutOptional.get());
+        } else {
+            throw new NoResultException("Workout with ID: " + workoutId + " could not be found");
+        }
+    }
+
+    public static class WorkoutHasExercisesMapper {
+        public static WorkoutHasExercisesDTO toDto(WorkoutHasExercises workoutHasExercises) {
             WorkoutHasExercisesDTO dto = new WorkoutHasExercisesDTO();
-            dto.setId(entity.getId());
-            dto.setSets(entity.getSets());
-            dto.setRepetitions(entity.getRepetitions());
-            dto.setWeight(entity.getWeight());
-            dto.setRestTime(entity.getRestTime());
+            dto.setId(workoutHasExercises.getId());
+            dto.setSets(workoutHasExercises.getSets());
+            dto.setRepetitions(workoutHasExercises.getRepetitions());
+            dto.setWeight(workoutHasExercises.getWeight());
+            dto.setRestTime(workoutHasExercises.getRestTime());
             return dto;
+        }
+
+        public static WorkoutHasExercises toEntity(WorkoutHasExercisesDTO dto) {
+            WorkoutHasExercises workoutHasExercises = new WorkoutHasExercises();
+            workoutHasExercises.setId(dto.getId());
+            workoutHasExercises.setSets(dto.getSets());
+            workoutHasExercises.setRepetitions(dto.getRepetitions());
+            workoutHasExercises.setWeight(dto.getWeight());
+            workoutHasExercises.setRestTime(dto.getRestTime());
+            return workoutHasExercises;
         }
     }
 }

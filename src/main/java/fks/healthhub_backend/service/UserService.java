@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -141,4 +142,14 @@ public class UserService {
         }
         userRepository.save(user);
     }
+
+    public void deleteScheduledWorkout(Long userHasWorkoutsId) {
+        Optional<UserHasWorkouts> userHasWorkoutsOptional = userHasWorkoutsRepository.findById(userHasWorkoutsId);
+        if (userHasWorkoutsOptional.isPresent()) {
+            userHasWorkoutsRepository.delete(userHasWorkoutsOptional.get());
+        } else {
+            throw new NoResultException("Scheduled workout not found with ID: " + userHasWorkoutsId);
+        }
+    }
+
 }

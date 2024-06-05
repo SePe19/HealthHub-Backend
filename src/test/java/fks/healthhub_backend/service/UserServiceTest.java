@@ -525,4 +525,36 @@ class UserServiceTest implements AutoCloseable {
         verify(userRepository, times(1)).findById(userId);
         verify(userRepository, never()).save(any());
     }
+
+    @Test
+    void deleteScheduledWorkout() {
+        // Arrange
+        Long userHasWorkoutsId = 1L;
+        UserHasWorkouts userHasWorkouts = new UserHasWorkouts();
+        userHasWorkouts.setId(userHasWorkoutsId);
+
+        when(userHasWorkoutsRepository.findById(userHasWorkoutsId)).thenReturn(Optional.of(userHasWorkouts));
+
+        // Act
+        userService.deleteScheduledWorkout(userHasWorkoutsId);
+
+        // Assert
+        verify(userHasWorkoutsRepository, times(1)).findById(userHasWorkoutsId);
+        verify(userHasWorkoutsRepository, times(1)).delete(userHasWorkouts);
+    }
+
+    @Test
+    void deleteScheduledWorkout_notFound() {
+        // Arrange
+        Long userHasWorkoutsId = 1L;
+
+        when(userHasWorkoutsRepository.findById(userHasWorkoutsId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NoResultException.class, () -> userService.deleteScheduledWorkout(userHasWorkoutsId));
+
+        // Verify interactions
+        verify(userHasWorkoutsRepository, times(1)).findById(userHasWorkoutsId);
+        verify(userHasWorkoutsRepository, never()).delete(any());
+    }
 }
