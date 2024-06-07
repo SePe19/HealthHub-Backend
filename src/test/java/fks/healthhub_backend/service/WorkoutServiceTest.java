@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fks.healthhub_backend.dto.WorkoutDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.Workout;
+import fks.healthhub_backend.model.WorkoutHasExercises;
 import fks.healthhub_backend.repository.UserRepository;
+import fks.healthhub_backend.repository.WorkoutHasExercisesRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
 import jakarta.persistence.NoResultException;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +26,9 @@ class WorkoutServiceTest implements AutoCloseable {
 
     @Mock
     private WorkoutRepository workoutRepository;
+
+    @Mock
+    private WorkoutHasExercisesRepository workoutHasExercisesRepository;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -212,13 +217,63 @@ class WorkoutServiceTest implements AutoCloseable {
     void deleteWorkout() {
         // Arrange
         Long workoutId = 1L;
+        Workout workout = new Workout(); // Create a workout object
 
-        doNothing().when(workoutRepository).deleteById(workoutId);
+        when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
 
         // Act
         workoutService.deleteWorkout(workoutId);
 
         // Assert
-        verify(workoutRepository, times(1)).deleteById(workoutId);
+        verify(workoutRepository, times(1)).delete(workout);
+    }
+
+
+    @Test
+    void deleteWorkoutExercise_ExistingExercise_ShouldDelete() {
+        Long workoutId = 1L;
+        Long exerciseId = 1L;
+        WorkoutHasExercises workoutHasExercises = new WorkoutHasExercises();
+        workoutHasExercises.setId(1L);
+
+        when(workoutHasExercisesRepository.findByWorkoutIdAndExerciseId(workoutId, exerciseId)).thenReturn(Optional.of(workoutHasExercises));
+
+        workoutService.deleteWorkoutExercise(workoutId, exerciseId);
+
+        verify(workoutHasExercisesRepository, times(1)).delete(workoutHasExercises);
+    }
+
+    @Test
+    void deleteWorkoutExercise_NonExistingExercise_ShouldThrowException() {
+        Long workoutId = 1L;
+        Long exerciseId = 1L;
+
+        when(workoutHasExercisesRepository.findByWorkoutIdAndExerciseId(workoutId, exerciseId)).thenReturn(Optional.empty());
+
+        NoResultException exception = assertThrows(NoResultException.class, () -> workoutService.deleteWorkoutExercise(workoutId, exerciseId));
+        assertEquals("Exercise with ID: 1 in Workout with ID: 1 could not be found", exception.getMessage());
+    }
+
+    @Test
+    void deleteWorkout_ExistingWorkout_ShouldDelete() {
+        Long workoutId = 1L;
+        Workout workout = new Workout();
+        workout.setId(workoutId);
+
+        when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
+
+        workoutService.deleteWorkout(workoutId);
+
+        verify(workoutRepository, times(1)).delete(workout);
+    }
+
+    @Test
+    void deleteWorkout_NonExistingWorkout_ShouldThrowException() {
+        Long workoutId = 1L;
+
+        when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
+
+        NoResultException exception = assertThrows(NoResultException.class, () -> workoutService.deleteWorkout(workoutId));
+        assertEquals("Workout with ID: 1 could not be found", exception.getMessage());
     }
 }

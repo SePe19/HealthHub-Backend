@@ -15,5 +15,4 @@ public interface UserHasWorkoutsRepository extends JpaRepository<UserHasWorkouts
     List<UserHasWorkouts> findByUserId(Long userId);
 
     List<UserHasWorkouts> findByUserIdAndScheduledAtAfter(Long user_id, ZonedDateTime scheduledAt);
-
 }
