@@ -58,6 +58,19 @@ public class UserService {
         return objectMapper.valueToTree(userWorkouts);
     }
 
+    @SneakyThrows
+    public JsonNode getScheduledWorkoutsForWeek(Long userId, ZonedDateTime date) {
+        LocalDate localDate = date.toLocalDate();
+        LocalDate startOfWeek = localDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
+
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        ZonedDateTime endOfWeekDateTime = endOfWeek.atTime(23, 59, 59).atZone(date.getZone());
+
+        List<UserHasWorkouts> userWorkouts = userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime);
+        return objectMapper.valueToTree(userWorkouts);
+    }
+
     public List<Workout> getAllWorkoutsByUser(Long userId){
         return userRepository.findWorkoutsByUserId(userId);
     }

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RestController
@@ -40,6 +41,12 @@ public class UserController {
     public ResponseEntity<JsonNode> getScheduledWorkout(@PathVariable Long id) {
         JsonNode workout = userService.getScheduledWorkouts(id);
         return new ResponseEntity<>(workout, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/scheduled-workouts-for-week")
+    public ResponseEntity<JsonNode> getScheduledWorkoutsForWeek(@PathVariable Long id, @RequestParam("date") ZonedDateTime date) {
+        JsonNode scheduledWorkoutsForWeek = userService.getScheduledWorkoutsForWeek(id, date);
+        return new ResponseEntity<>(scheduledWorkoutsForWeek, HttpStatus.OK);
     }
 
     @GetMapping("/{id}/workout-completion")
