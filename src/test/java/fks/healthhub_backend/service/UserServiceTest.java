@@ -18,7 +18,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -139,6 +142,116 @@ class UserServiceTest implements AutoCloseable {
     }
 
     @Test
+    void getScheduledWorkoutsForWeek_WeekWithWorkouts() {
+        // Arrange
+        Long userId = 1L;
+        ZonedDateTime date = ZonedDateTime.now();
+        LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        ZonedDateTime endOfWeekDateTime = endOfWeek.atTime(23, 59, 59).atZone(date.getZone());
+        List<UserHasWorkouts> userWorkouts = Arrays.asList(new UserHasWorkouts(), new UserHasWorkouts());
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime))
+                .thenReturn(userWorkouts);
+
+        // Act
+        JsonNode result = userService.getScheduledWorkoutsForWeek(userId, date);
+
+        // Assert
+        assertEquals(objectMapper.valueToTree(userWorkouts), result);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime);
+        verifyNoMoreInteractions(userHasWorkoutsRepository);
+    }
+
+    @Test
+    void getScheduledWorkoutsForWeek_WeekWithPartialWorkouts() {
+        // Arrange
+        Long userId = 1L;
+        ZonedDateTime date = ZonedDateTime.of(2024, 6, 6, 0, 0, 0, 0, ZoneId.systemDefault());
+        LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        ZonedDateTime endOfWeekDateTime = endOfWeek.atTime(23, 59, 59).atZone(date.getZone());
+        List<UserHasWorkouts> userWorkouts = Arrays.asList(new UserHasWorkouts(), new UserHasWorkouts());
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime))
+                .thenReturn(userWorkouts);
+
+        // Act
+        JsonNode result = userService.getScheduledWorkoutsForWeek(userId, date);
+
+        // Assert
+        assertEquals(objectMapper.valueToTree(userWorkouts), result);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime);
+        verifyNoMoreInteractions(userHasWorkoutsRepository);
+    }
+
+    @Test
+    void getScheduledWorkoutsForWeek_WeekWithoutWorkouts() {
+        // Arrange
+        Long userId = 1L;
+        ZonedDateTime date = ZonedDateTime.of(2024, 6, 6, 0, 0, 0, 0, ZoneId.systemDefault()); // Tuesday
+        LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        ZonedDateTime endOfWeekDateTime = endOfWeek.atTime(23, 59, 59).atZone(date.getZone());
+        List<UserHasWorkouts> userWorkouts = null; // Set userWorkouts to null
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime))
+                .thenReturn(userWorkouts);
+
+        // Act
+        JsonNode result = userService.getScheduledWorkoutsForWeek(userId, date);
+
+        // Assert
+        assertNull(result);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime);
+        verifyNoMoreInteractions(userHasWorkoutsRepository);
+    }
+
+    @Test
+    void getScheduledWorkoutsForWeek_DateOnFirstDayOfWeek() {
+        // Arrange
+        Long userId = 1L;
+        ZonedDateTime date = ZonedDateTime.of(2024, 6, 3, 0, 0, 0, 0, ZoneId.systemDefault()); // Monday
+        LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        ZonedDateTime endOfWeekDateTime = endOfWeek.atTime(23, 59, 59).atZone(date.getZone());
+        List<UserHasWorkouts> userWorkouts = Arrays.asList(new UserHasWorkouts(), new UserHasWorkouts());
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime))
+                .thenReturn(userWorkouts);
+
+        // Act
+        JsonNode result = userService.getScheduledWorkoutsForWeek(userId, date);
+
+        // Assert
+        assertEquals(objectMapper.valueToTree(userWorkouts), result);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime);
+        verifyNoMoreInteractions(userHasWorkoutsRepository);
+    }
+
+    @Test
+    void getScheduledWorkoutsForWeek_DateOnLastDayOfWeek() {
+        // Arrange
+        Long userId = 1L;
+        ZonedDateTime date = ZonedDateTime.of(2024, 6, 9, 0, 0, 0, 0, ZoneId.systemDefault()); // Sunday
+        LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        ZonedDateTime endOfWeekDateTime = endOfWeek.atTime(23, 59, 59).atZone(date.getZone());
+        List<UserHasWorkouts> userWorkouts = Arrays.asList(new UserHasWorkouts(), new UserHasWorkouts());
+        when(userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime))
+                .thenReturn(userWorkouts);
+
+        // Act
+        JsonNode result = userService.getScheduledWorkoutsForWeek(userId, date);
+
+        // Assert
+        assertEquals(objectMapper.valueToTree(userWorkouts), result);
+        verify(userHasWorkoutsRepository, times(1)).findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime);
+        verifyNoMoreInteractions(userHasWorkoutsRepository);
+    }
+
+    @Test
     void getAllWorkoutsByUser() {
         // Arrange
         Long userId = 1L;
@@ -175,7 +288,7 @@ class UserServiceTest implements AutoCloseable {
 
         when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(workouts);
 
-        JsonNode result = userService.getWorkoutCompletion(userId, 90);
+        JsonNode result = userService.getWorkoutCompletion(userId, 91);
 
         assertNotNull(result);
         assertEquals(2, result.get("complete").asInt());
@@ -199,7 +312,7 @@ class UserServiceTest implements AutoCloseable {
 
         when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(workouts);
 
-        JsonNode result = userService.getWorkoutCompletion(userId, 90);
+        JsonNode result = userService.getWorkoutCompletion(userId, 91);
 
         assertNotNull(result);
         assertEquals(0, result.get("complete").asInt());
@@ -223,7 +336,7 @@ class UserServiceTest implements AutoCloseable {
 
         when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(workouts);
 
-        JsonNode result = userService.getWorkoutCompletion(userId, 90);
+        JsonNode result = userService.getWorkoutCompletion(userId, 91);
 
         assertNotNull(result);
         assertEquals(2, result.get("complete").asInt());
@@ -239,7 +352,7 @@ class UserServiceTest implements AutoCloseable {
 
         when(userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(eq(userId), any(ZonedDateTime.class))).thenReturn(List.of());
 
-        JsonNode result = userService.getWorkoutCompletion(userId, 90);
+        JsonNode result = userService.getWorkoutCompletion(userId, 91);
 
         assertNotNull(result);
         assertEquals(0, result.get("complete").asInt());
@@ -420,7 +533,7 @@ class UserServiceTest implements AutoCloseable {
         Long workoutId = 1L;
         boolean recurring = false;
         DayOfWeek dayOfWeek = null;
-        ZonedDateTime scheduledAt = ZonedDateTime.now(); // Initialize scheduledAt
+        ZonedDateTime scheduledAt = ZonedDateTime.now();
 
         UserHasWorkouts userHasWorkouts = new UserHasWorkouts();
         userHasWorkouts.setScheduledAt(scheduledAt);
