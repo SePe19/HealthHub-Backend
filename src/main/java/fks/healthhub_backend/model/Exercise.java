@@ -35,6 +35,9 @@ public class Exercise {
     @Column(name = "exercise_difficulty")
     private ExerciseDifficulty exerciseDifficulty;
 
+    @Column(name = "video_guide")
+    private String videoGuide;
+
     @ElementCollection(targetClass = MuscleGroup.class)
     @CollectionTable(name = "exercise_muscle_groups", joinColumns = @JoinColumn(name = "exercise_id"),
             indexes = {@Index(name = "idx_exercise_id", columnList = "exercise_id"),
