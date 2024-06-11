@@ -109,8 +109,6 @@ public class WorkoutService {
         workoutRepository.save(workout);
     }
 
-
-
     public void deleteWorkoutExercise(Long workoutId, Long exerciseId) {
         Optional<WorkoutHasExercises> workoutHasExercisesOptional = workoutHasExercisesRepository.findByWorkoutIdAndExerciseId(workoutId, exerciseId);
         if (workoutHasExercisesOptional.isPresent()) {

@@ -32,6 +32,9 @@ public class Workout {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "duration")
+    private int duration;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "workout_type", nullable = false)
     private WorkoutType workoutType;

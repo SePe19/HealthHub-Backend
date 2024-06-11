@@ -189,12 +189,12 @@ class UserServiceTest implements AutoCloseable {
     void getScheduledWorkoutsForWeek_WeekWithoutWorkouts() {
         // Arrange
         Long userId = 1L;
-        ZonedDateTime date = ZonedDateTime.of(2024, 6, 6, 0, 0, 0, 0, ZoneId.systemDefault()); // Tuesday
+        ZonedDateTime date = ZonedDateTime.of(2024, 6, 6, 0, 0, 0, 0, ZoneId.systemDefault());
         LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
         LocalDate endOfWeek = startOfWeek.plusDays(6);
         ZonedDateTime endOfWeekDateTime = endOfWeek.atTime(23, 59, 59).atZone(date.getZone());
-        List<UserHasWorkouts> userWorkouts = null; // Set userWorkouts to null
+        List<UserHasWorkouts> userWorkouts = null;
         when(userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime))
                 .thenReturn(userWorkouts);
 
@@ -211,7 +211,7 @@ class UserServiceTest implements AutoCloseable {
     void getScheduledWorkoutsForWeek_DateOnFirstDayOfWeek() {
         // Arrange
         Long userId = 1L;
-        ZonedDateTime date = ZonedDateTime.of(2024, 6, 3, 0, 0, 0, 0, ZoneId.systemDefault()); // Monday
+        ZonedDateTime date = ZonedDateTime.of(2024, 6, 3, 0, 0, 0, 0, ZoneId.systemDefault());
         LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
         LocalDate endOfWeek = startOfWeek.plusDays(6);
@@ -233,7 +233,7 @@ class UserServiceTest implements AutoCloseable {
     void getScheduledWorkoutsForWeek_DateOnLastDayOfWeek() {
         // Arrange
         Long userId = 1L;
-        ZonedDateTime date = ZonedDateTime.of(2024, 6, 9, 0, 0, 0, 0, ZoneId.systemDefault()); // Sunday
+        ZonedDateTime date = ZonedDateTime.of(2024, 6, 9, 0, 0, 0, 0, ZoneId.systemDefault());
         LocalDate startOfWeek = date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         ZonedDateTime startOfWeekDateTime = startOfWeek.atStartOfDay(date.getZone());
         LocalDate endOfWeek = startOfWeek.plusDays(6);
