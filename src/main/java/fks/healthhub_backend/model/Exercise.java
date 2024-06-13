@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -37,6 +38,14 @@ public class Exercise {
 
     @Column(name = "video_guide")
     private String videoGuide;
+
+    @NonNull
+    @Column(name = "created_at")
+    private ZonedDateTime createdAt = ZonedDateTime.now();
+
+    @NonNull
+    @Column(name = "updated_at")
+    private ZonedDateTime updatedAt = ZonedDateTime.now();
 
     @ElementCollection(targetClass = MuscleGroup.class)
     @CollectionTable(name = "exercise_muscle_groups", joinColumns = @JoinColumn(name = "exercise_id"),

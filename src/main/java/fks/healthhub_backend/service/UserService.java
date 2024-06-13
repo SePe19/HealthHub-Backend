@@ -9,6 +9,7 @@ import fks.healthhub_backend.repository.UserHasWorkoutsRepository;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
 import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -136,6 +137,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     @SneakyThrows
     public Object createScheduledWorkout(UserHasWorkouts userHasWorkout, Long userId, Long workoutId, boolean recurring, DayOfWeek dayOfWeek, ZonedDateTime scheduledAt) {
         User user = userRepository.findById(userId)
@@ -183,6 +185,7 @@ public class UserService {
                 .orElseThrow(() -> new NoResultException("User with ID: " + id + " could not be found"));
         if(updatedUser != null) {
             user.setUsername(!updatedUser.getUsername().equals("") ? updatedUser.getUsername() : user.getUsername());
+            user.setUpdatedAt(ZonedDateTime.now());
         }
         userRepository.save(user);
     }

@@ -3,6 +3,7 @@ package fks.healthhub_backend.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -35,6 +36,14 @@ public class UserHasWorkouts {
 
     @Column(name = "completed", nullable = false)
     private Boolean completed;
+
+    @NonNull
+    @Column(name = "created_at")
+    private ZonedDateTime createdAt = ZonedDateTime.now();
+
+    @NonNull
+    @Column(name = "updated_at")
+    private ZonedDateTime updatedAt = ZonedDateTime.now();
 
     @Override
     public boolean equals(Object o) {

@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -33,11 +34,19 @@ public class Workout {
     private String description;
 
     @Column(name = "duration")
-    private int duration;
+    private int duration = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "workout_type", nullable = false)
     private WorkoutType workoutType;
+
+    @NonNull
+    @Column(name = "created_at")
+    private ZonedDateTime createdAt;
+
+    @NonNull
+    @Column(name = "updated_at")
+    private ZonedDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
