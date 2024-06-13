@@ -17,8 +17,8 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "workouts")
-public class Workout {
+@Table(name = "users")
+public class User {
 
     @Id
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -27,48 +27,33 @@ public class Workout {
     private Long id;
 
     @NonNull
-    @Column(name = "title")
-    private String title;
+    @Column(name = "username")
+    private String username;
 
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "duration")
-    private int duration = 0;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "workout_type", nullable = false)
-    private WorkoutType workoutType;
+    @NonNull
+    @Column(name = "password")
+    private String password;
 
     @NonNull
     @Column(name = "created_at")
-    private ZonedDateTime createdAt;
+    private ZonedDateTime createdAt = ZonedDateTime.now();
 
     @NonNull
     @Column(name = "updated_at")
-    private ZonedDateTime updatedAt;
+    private ZonedDateTime updatedAt = ZonedDateTime.now();
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnoreProperties("userHasWorkouts")
-    private User user;
-
-    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties("workout")
-    private Set<WorkoutHasExercises> workoutHasExercises = new HashSet<>();
-
-    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonIgnoreProperties("workout")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("user")
     private Set<UserHasWorkouts> userHasWorkouts = new HashSet<>();
 
-    public Workout(){}
+    public User(){}
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Workout workout = (Workout) o;
-        return Objects.equals(id, workout.id);
+        User user = (User) o;
+        return Objects.equals(id, user.id);
     }
 
     @Override
