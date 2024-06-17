@@ -199,4 +199,11 @@ public class UserService {
         }
     }
 
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    public void saveUser(User user) {
+        userRepository.save(user);
+    }
 }
