@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT w FROM Workout w JOIN w.user u WHERE u.id = :userId")
     List<Workout> findWorkoutsByUserId(Long userId);
+
+    Boolean existsByUsername(String username);
 }
