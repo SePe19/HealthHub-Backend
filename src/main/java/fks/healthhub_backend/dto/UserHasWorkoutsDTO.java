@@ -8,7 +8,9 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 public class UserHasWorkoutsDTO {
+    private Long id;
     private Long userId;
     private Long workoutId;
     private ZonedDateTime scheduledAt;
+    private Boolean completed;
 }

@@ -107,10 +107,15 @@ public class UserController {
         return ResponseEntity.ok().body(id);
     }
 
+    @PutMapping("/scheduled-workouts/{userHasWorkoutsId}")
+    public ResponseEntity<UserHasWorkoutsDTO> updateUserWorkout(@PathVariable Long userHasWorkoutsId, @RequestBody UserHasWorkoutsDTO userHasWorkouts) {
+        userService.updateUserWorkout(userHasWorkoutsId, userHasWorkouts);
+        return ResponseEntity.ok().body(userHasWorkouts);
+    }
+
     @DeleteMapping("/scheduled-workouts/{userHasWorkoutsId}")
     public ResponseEntity<Void> deleteScheduledWorkout(@PathVariable Long userHasWorkoutsId) {
         userService.deleteScheduledWorkout(userHasWorkoutsId);
         return ResponseEntity.noContent().build();
     }
-
 }

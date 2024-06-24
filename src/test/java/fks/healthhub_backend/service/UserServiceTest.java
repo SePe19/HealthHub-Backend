@@ -7,6 +7,7 @@ import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.model.UserHasWorkouts;
 import fks.healthhub_backend.model.Workout;
 import fks.healthhub_backend.model.WorkoutType;
+import fks.healthhub_backend.repository.RecurringWorkoutRepository;
 import fks.healthhub_backend.repository.UserHasWorkoutsRepository;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
@@ -17,10 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
@@ -37,6 +35,9 @@ class UserServiceTest implements AutoCloseable {
 
     @Mock
     private UserHasWorkoutsRepository userHasWorkoutsRepository;
+
+    @Mock
+    private RecurringWorkoutRepository recurringWorkoutRepository;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -527,52 +528,54 @@ class UserServiceTest implements AutoCloseable {
     }
 
     @Test
-    void createScheduledWorkout_nonRecurring() {
+    void scheduleWorkout() {
         // Arrange
         Long userId = 1L;
         Long workoutId = 1L;
-        boolean recurring = false;
-        DayOfWeek dayOfWeek = null;
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
-        UserHasWorkouts userHasWorkouts = new UserHasWorkouts();
-        userHasWorkouts.setScheduledAt(scheduledAt);
+        // Mocked instance of UserHasWorkouts
+        UserHasWorkouts mockedSavedWorkout = new UserHasWorkouts();
+        mockedSavedWorkout.setId(1L); // Set an ID to avoid NPE on getId()
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(new Workout()));
+        when(userHasWorkoutsRepository.save(any(UserHasWorkouts.class))).thenReturn(mockedSavedWorkout); // Ensure save returns a mock instance
 
         // Act & Assert
-        assertDoesNotThrow(() -> userService.createScheduledWorkout(userHasWorkouts, userId, workoutId, recurring, dayOfWeek, scheduledAt));
+        assertDoesNotThrow(() -> userService.scheduleWorkout(userId, workoutId, scheduledAt));
 
         verify(userHasWorkoutsRepository).save(any(UserHasWorkouts.class));
     }
 
     @Test
-    void createScheduledWorkout_recurring() {
+    void scheduleRecurringWorkout() {
         // Arrange
         Long userId = 1L;
         Long workoutId = 1L;
-        boolean recurring = true;
-        DayOfWeek dayOfWeek = DayOfWeek.MONDAY;
+        Set<DayOfWeek> dayOfWeekSet = new HashSet<>();
+        dayOfWeekSet.add(DayOfWeek.MONDAY);
+        dayOfWeekSet.add(DayOfWeek.FRIDAY);
+        LocalTime timeOfDay = LocalTime.now();
 
         User user = new User();
         Workout workout = new Workout();
         List<UserHasWorkouts> scheduledWorkouts = new ArrayList<>();
-        scheduledWorkouts.add(new UserHasWorkouts());
+        UserHasWorkouts mockedSavedWorkout = new UserHasWorkouts();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.of(workout));
-        when(userHasWorkoutsRepository.saveAll(any())).thenReturn(scheduledWorkouts);
+        when(userHasWorkoutsRepository.save(any(UserHasWorkouts.class))).thenReturn(mockedSavedWorkout);
 
         // Act
-        Object result = userService.createScheduledWorkout(new UserHasWorkouts(), userId, workoutId, recurring, dayOfWeek, null);
+        List<Long> result = userService.scheduleRecurringWorkouts(userId, workoutId, dayOfWeekSet, timeOfDay);
 
         // Assert
         assertNotNull(result);
         assertTrue(result instanceof List);
-        assertEquals(1, ((List<?>) result).size());
+        assertEquals(25, result.size());
 
-        verify(userHasWorkoutsRepository, times(1)).saveAll(any());
+        verify(userHasWorkoutsRepository, times(dayOfWeekSet.size() * 12 + 1)).save(any(UserHasWorkouts.class));
     }
 
     @Test
@@ -580,14 +583,13 @@ class UserServiceTest implements AutoCloseable {
         // Arrange
         Long userId = 1L;
         Long workoutId = 1L;
-        boolean recurring = false;
-        DayOfWeek dayOfWeek = null;
+        ZonedDateTime scheduledAt = ZonedDateTime.now();
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(Exception.class,
-                () -> userService.createScheduledWorkout(new UserHasWorkouts(), userId, workoutId, recurring, dayOfWeek, null));
+                () -> userService.scheduleWorkout(userId, workoutId, scheduledAt));
 
         verify(workoutRepository, never()).findById(workoutId);
         verify(userHasWorkoutsRepository, never()).save(any());
@@ -598,15 +600,13 @@ class UserServiceTest implements AutoCloseable {
         // Arrange
         Long userId = 1L;
         Long workoutId = 1L;
-        boolean recurring = false;
-        DayOfWeek dayOfWeek = null;
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
         when(workoutRepository.findById(workoutId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(Exception.class,
-                () -> userService.createScheduledWorkout(new UserHasWorkouts(), userId, workoutId, recurring, dayOfWeek, null));
+                () -> userService.scheduleWorkout(userId, workoutId, ZonedDateTime.now()));
 
         verify(userHasWorkoutsRepository, never()).save(any());
     }
@@ -616,14 +616,14 @@ class UserServiceTest implements AutoCloseable {
         // Arrange
         Long userId = 1L;
         Long workoutId = 1L;
-        boolean recurring = true;
-        DayOfWeek dayOfWeek = null;
+        Set<DayOfWeek> dayOfWeekSet = new HashSet<>();
+        LocalTime timeOfDay = LocalTime.now();
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(Exception.class,
-                () -> userService.createScheduledWorkout(new UserHasWorkouts(), userId, workoutId, recurring, dayOfWeek, null));
+                () -> userService.scheduleRecurringWorkouts(userId, workoutId, dayOfWeekSet, timeOfDay));
 
         verify(userRepository).findById(userId);
         verify(workoutRepository, never()).findById(any());

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fks.healthhub_backend.dto.UserDTO;
+import fks.healthhub_backend.dto.UserHasWorkoutsDTO;
 import fks.healthhub_backend.model.*;
 import fks.healthhub_backend.repository.RecurringWorkoutRepository;
 import fks.healthhub_backend.repository.UserHasWorkoutsRepository;
@@ -216,6 +217,19 @@ public class UserService {
             user.setUpdatedAt(ZonedDateTime.now());
         }
         userRepository.save(user);
+    }
+
+    public void updateUserWorkout(Long userHasWorkoutsId, UserHasWorkoutsDTO updatedUserWorkout) {
+        UserHasWorkouts userHasWorkouts = userHasWorkoutsRepository.findById(userHasWorkoutsId)
+                .orElseThrow(() -> new NoResultException("UserHasWorkouts with ID: " + userHasWorkoutsId + " could not be found"));
+
+        if (updatedUserWorkout != null) {
+            userHasWorkouts.setScheduledAt(updatedUserWorkout.getScheduledAt());
+            userHasWorkouts.setCompleted(updatedUserWorkout.getCompleted());
+            userHasWorkouts.setUpdatedAt(ZonedDateTime.now());
+        }
+
+        userHasWorkoutsRepository.save(userHasWorkouts);
     }
 
     public void deleteScheduledWorkout(Long userHasWorkoutsId) {
