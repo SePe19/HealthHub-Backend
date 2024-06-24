@@ -4,40 +4,34 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fks.healthhub_backend.dto.UserDTO;
+import fks.healthhub_backend.dto.UserHasWorkoutsDTO;
 import fks.healthhub_backend.model.*;
+import fks.healthhub_backend.repository.RecurringWorkoutRepository;
 import fks.healthhub_backend.repository.UserHasWorkoutsRepository;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
-import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.temporal.TemporalAdjusters;
-import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final WorkoutRepository workoutRepository;
     private final UserHasWorkoutsRepository userHasWorkoutsRepository;
     private final ObjectMapper objectMapper;
-
-    @Autowired
-    public UserService(UserRepository userRepository, WorkoutRepository workoutRepository, UserHasWorkoutsRepository userHasWorkoutsRepository, ObjectMapper objectMapper) {
-        this.userRepository = userRepository;
-        this.workoutRepository = workoutRepository;
-        this.userHasWorkoutsRepository = userHasWorkoutsRepository;
-        this.objectMapper = objectMapper;
-    }
+    private final RecurringWorkoutRepository recurringWorkoutRepository;
 
     @SneakyThrows
     public JsonNode getUser(Long id){
@@ -60,6 +54,15 @@ public class UserService {
     }
 
     @SneakyThrows
+    public JsonNode getScheduledWorkoutsForDate(Long userId, ZonedDateTime date) {
+        ZonedDateTime startOfDay = date.toLocalDate().atStartOfDay(date.getZone());
+        ZonedDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
+
+        List<UserHasWorkouts> userWorkoutsForDate = userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfDay, endOfDay);
+        return objectMapper.valueToTree(userWorkoutsForDate);
+    }
+
+    @SneakyThrows
     public JsonNode getScheduledWorkoutsForWeek(Long userId, ZonedDateTime date) {
         LocalDate localDate = date.toLocalDate();
         LocalDate startOfWeek = localDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -70,6 +73,12 @@ public class UserService {
 
         List<UserHasWorkouts> userWorkouts = userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, startOfWeekDateTime, endOfWeekDateTime);
         return objectMapper.valueToTree(userWorkouts);
+    }
+
+    @SneakyThrows
+    public JsonNode getRecurringWorkoutsForWeek(Long userId) {
+        List<RecurringWorkout> recurringWorkouts = recurringWorkoutRepository.findByUserId(userId);
+        return objectMapper.valueToTree(recurringWorkouts);
     }
 
     public List<Workout> getAllWorkoutsByUser(Long userId){
@@ -137,47 +146,67 @@ public class UserService {
         userRepository.save(user);
     }
 
-    @Transactional
-    @SneakyThrows
-    public Object createScheduledWorkout(UserHasWorkouts userHasWorkout, Long userId, Long workoutId, boolean recurring, DayOfWeek dayOfWeek, ZonedDateTime scheduledAt) {
+    public Long scheduleWorkout(Long userId, Long workoutId, ZonedDateTime scheduledAt) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new Exception("User not found with ID: " + userId));
-        Workout workout = workoutRepository.findById(workoutId)
-                .orElseThrow(() -> new Exception("Workout not found with ID: " + workoutId));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
 
-        if (recurring && dayOfWeek != null) {
-            return createRecurringScheduledWorkouts(user, workout, dayOfWeek);
-        } else {
-            userHasWorkout.setUser(user);
-            userHasWorkout.setWorkout(workout);
-            userHasWorkout.setScheduledAt(scheduledAt);
-            userHasWorkout.setCompleted(false);
-            return userHasWorkoutsRepository.save(userHasWorkout);
-        }
+        Workout workout = workoutRepository.findById(workoutId)
+                .orElseThrow(() -> new EntityNotFoundException("Workout not found with ID: " + workoutId));
+
+        UserHasWorkouts userHasWorkout = new UserHasWorkouts();
+        userHasWorkout.setUser(user);
+        userHasWorkout.setWorkout(workout);
+        userHasWorkout.setScheduledAt(scheduledAt);
+        userHasWorkout.setCompleted(false);
+
+        UserHasWorkouts savedWorkout = userHasWorkoutsRepository.save(userHasWorkout);
+        return savedWorkout.getId();
     }
 
-    @SneakyThrows
-    private List<UserHasWorkouts> createRecurringScheduledWorkouts(User user, Workout workout, DayOfWeek dayOfWeek) {
-        List<UserHasWorkouts> scheduledWorkouts = new ArrayList<>();
-        LocalDate startDate = LocalDate.now();
-        LocalDate endDate = startDate.plusWeeks(12);
+    public List<Long> scheduleRecurringWorkouts(Long userId, Long workoutId, Set<DayOfWeek> daysOfWeek, LocalTime timeOfDay) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
 
+        Workout workout = workoutRepository.findById(workoutId)
+                .orElseThrow(() -> new EntityNotFoundException("Workout not found with ID: " + workoutId));
+
+        RecurringWorkout recurringWorkout = new RecurringWorkout();
+        recurringWorkout.setUser(user);
+        recurringWorkout.setWorkout(workout);
+        recurringWorkout.setDaysOfWeek(daysOfWeek);
+        recurringWorkout.setTimeOfDay(timeOfDay);
+
+        recurringWorkoutRepository.save(recurringWorkout);
+
+        return generateScheduledWorkoutsForRecurring(user, workout, recurringWorkout);
+    }
+
+    private List<Long> generateScheduledWorkoutsForRecurring(User user, Workout workout, RecurringWorkout recurringWorkout) {
+        List<Long> scheduledWorkoutIds = new ArrayList<>();
+        LocalDate startDate = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endDate = startDate.plusWeeks(12);
         ZoneId utcZone = ZoneId.of("UTC");
 
-        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusWeeks(1)) {
-            LocalDate nextDate = date.with(TemporalAdjusters.nextOrSame(dayOfWeek));
-            ZonedDateTime scheduledAt = nextDate.atStartOfDay(utcZone);
+        for (DayOfWeek dayOfWeek : recurringWorkout.getDaysOfWeek()) {
+            LocalDate date = startDate.with(TemporalAdjusters.nextOrSame(dayOfWeek));
 
-            UserHasWorkouts scheduledWorkout = new UserHasWorkouts();
-            scheduledWorkout.setUser(user);
-            scheduledWorkout.setWorkout(workout);
-            scheduledWorkout.setScheduledAt(scheduledAt);
-            scheduledWorkout.setCompleted(false);
+            while (!date.isAfter(endDate)) {
+                ZonedDateTime scheduledAt = date.atTime(recurringWorkout.getTimeOfDay()).atZone(utcZone);
 
-            scheduledWorkouts.add(scheduledWorkout);
+                UserHasWorkouts scheduledWorkout = new UserHasWorkouts();
+                scheduledWorkout.setUser(user);
+                scheduledWorkout.setWorkout(workout);
+                scheduledWorkout.setScheduledAt(scheduledAt);
+                scheduledWorkout.setCompleted(false);
+
+                UserHasWorkouts savedWorkout = userHasWorkoutsRepository.save(scheduledWorkout);
+                scheduledWorkoutIds.add(savedWorkout.getId());
+
+                date = date.plusWeeks(1);
+            }
         }
 
-        return userHasWorkoutsRepository.saveAll(scheduledWorkouts);
+        return scheduledWorkoutIds;
     }
 
     public void updateUser(Long id, User updatedUser) {
@@ -188,6 +217,19 @@ public class UserService {
             user.setUpdatedAt(ZonedDateTime.now());
         }
         userRepository.save(user);
+    }
+
+    public void updateUserWorkout(Long userHasWorkoutsId, UserHasWorkoutsDTO updatedUserWorkout) {
+        UserHasWorkouts userHasWorkouts = userHasWorkoutsRepository.findById(userHasWorkoutsId)
+                .orElseThrow(() -> new NoResultException("UserHasWorkouts with ID: " + userHasWorkoutsId + " could not be found"));
+
+        if (updatedUserWorkout != null) {
+            userHasWorkouts.setScheduledAt(updatedUserWorkout.getScheduledAt());
+            userHasWorkouts.setCompleted(updatedUserWorkout.getCompleted());
+            userHasWorkouts.setUpdatedAt(ZonedDateTime.now());
+        }
+
+        userHasWorkoutsRepository.save(userHasWorkouts);
     }
 
     public void deleteScheduledWorkout(Long userHasWorkoutsId) {

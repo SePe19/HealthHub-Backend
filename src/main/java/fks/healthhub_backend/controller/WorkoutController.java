@@ -40,6 +40,12 @@ public class WorkoutController {
         return new ResponseEntity<>(workouts, HttpStatus.OK);
     }
 
+    @GetMapping("/user-workouts-by-workout-type")
+    public ResponseEntity<List<Workout>> workoutByWorkoutType(@RequestParam Long userId, @RequestParam WorkoutType workoutType) {
+        List<Workout> workouts = workoutService.getAllWorkoutsByWorkoutType(userId, workoutType);
+        return new ResponseEntity<>(workouts, HttpStatus.OK);
+    }
+
     @GetMapping("/workout-types")
     public ResponseEntity<List<WorkoutType>> workoutTypes() {
         List<WorkoutType> workoutTypes = List.of(WorkoutType.values());

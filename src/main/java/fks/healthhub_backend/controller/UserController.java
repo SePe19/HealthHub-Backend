@@ -1,10 +1,10 @@
 package fks.healthhub_backend.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import fks.healthhub_backend.dto.RecurringWorkoutDTO;
 import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.dto.UserHasWorkoutsDTO;
 import fks.healthhub_backend.model.User;
-import fks.healthhub_backend.model.UserHasWorkouts;
 import fks.healthhub_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,10 +43,22 @@ public class UserController {
         return new ResponseEntity<>(workout, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}/scheduled-workouts-for-date")
+    public ResponseEntity<JsonNode> getScheduledWorkoutsForDate(@PathVariable Long id, @RequestParam("date") ZonedDateTime date) {
+        JsonNode scheduledWorkoutsForDate = userService.getScheduledWorkoutsForDate(id, date);
+        return new ResponseEntity<>(scheduledWorkoutsForDate, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}/scheduled-workouts-for-week")
     public ResponseEntity<JsonNode> getScheduledWorkoutsForWeek(@PathVariable Long id, @RequestParam("date") ZonedDateTime date) {
         JsonNode scheduledWorkoutsForWeek = userService.getScheduledWorkoutsForWeek(id, date);
         return new ResponseEntity<>(scheduledWorkoutsForWeek, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/recurring-workouts-for-week")
+    public ResponseEntity<JsonNode> getRecurringWorkoutsForWeek(@PathVariable Long id) {
+        JsonNode recurringWorkoutsForWeek = userService.getRecurringWorkoutsForWeek(id);
+        return new ResponseEntity<>(recurringWorkoutsForWeek, HttpStatus.OK);
     }
 
     @GetMapping("/{id}/workout-completion")
@@ -67,26 +79,26 @@ public class UserController {
         return new ResponseEntity<>(user.getId(), HttpStatus.CREATED);
     }
 
-
     @PostMapping("/scheduled-workouts")
-    public ResponseEntity<?> createScheduledWorkout(@RequestBody UserHasWorkoutsDTO workout) {
-        Object result = userService.createScheduledWorkout(
-                new UserHasWorkouts(),
+    public ResponseEntity<Long> scheduleWorkout(@RequestBody UserHasWorkoutsDTO workout) {
+        Long scheduledWorkoutId = userService.scheduleWorkout(
                 workout.getUserId(),
                 workout.getWorkoutId(),
-                workout.isRecurring(),
-                workout.getDayOfWeek(),
                 workout.getScheduledAt()
         );
+        return new ResponseEntity<>(scheduledWorkoutId, HttpStatus.CREATED);
+    }
 
-        if (result instanceof List) {
-            List<UserHasWorkouts> scheduledWorkouts = (List<UserHasWorkouts>) result;
-            List<Long> ids = scheduledWorkouts.stream().map(UserHasWorkouts::getId).toList();
-            return new ResponseEntity<>(ids, HttpStatus.CREATED);
-        } else {
-            UserHasWorkouts scheduledWorkout = (UserHasWorkouts) result;
-            return new ResponseEntity<>(scheduledWorkout.getId(), HttpStatus.CREATED);
-        }
+    @PostMapping("/recurring-workouts")
+    public ResponseEntity<List<Long>> scheduleRecurringWorkouts(@RequestBody RecurringWorkoutDTO recurringWorkout) {
+        List<Long> scheduledWorkoutIds = userService.scheduleRecurringWorkouts(
+                recurringWorkout.getUserId(),
+                recurringWorkout.getWorkoutId(),
+                recurringWorkout.getDaysOfWeek(),
+                recurringWorkout.getTimeOfDay()
+        );
+
+        return new ResponseEntity<>(scheduledWorkoutIds, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -95,10 +107,15 @@ public class UserController {
         return ResponseEntity.ok().body(id);
     }
 
+    @PutMapping("/scheduled-workouts/{userHasWorkoutsId}")
+    public ResponseEntity<UserHasWorkoutsDTO> updateUserWorkout(@PathVariable Long userHasWorkoutsId, @RequestBody UserHasWorkoutsDTO userHasWorkouts) {
+        userService.updateUserWorkout(userHasWorkoutsId, userHasWorkouts);
+        return ResponseEntity.ok().body(userHasWorkouts);
+    }
+
     @DeleteMapping("/scheduled-workouts/{userHasWorkoutsId}")
     public ResponseEntity<Void> deleteScheduledWorkout(@PathVariable Long userHasWorkoutsId) {
         userService.deleteScheduledWorkout(userHasWorkoutsId);
         return ResponseEntity.noContent().build();
     }
-
 }

@@ -9,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Getter
@@ -55,7 +53,7 @@ public class Workout {
 
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("workout")
-    private Set<WorkoutHasExercises> workoutHasExercises = new HashSet<>();
+    private List<WorkoutHasExercises> workoutHasExercises = new ArrayList<>();
 
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("workout")

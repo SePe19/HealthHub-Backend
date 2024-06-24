@@ -18,4 +18,5 @@ public interface UserHasWorkoutsRepository extends JpaRepository<UserHasWorkouts
 
     List<UserHasWorkouts> findByUserIdAndScheduledAtBetween(Long userId, ZonedDateTime start, ZonedDateTime end);
 
+    List<UserHasWorkouts> findByUserIdAndScheduledAtBetweenAndDayOfWeekIsNotNull(Long userId, ZonedDateTime start, ZonedDateTime end);
 }

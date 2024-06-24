@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.dto.WorkoutDTO;
 import fks.healthhub_backend.dto.WorkoutHasExercisesDTO;
-import fks.healthhub_backend.model.Exercise;
-import fks.healthhub_backend.model.User;
-import fks.healthhub_backend.model.Workout;
-import fks.healthhub_backend.model.WorkoutHasExercises;
+import fks.healthhub_backend.model.*;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutHasExercisesRepository;
 import fks.healthhub_backend.repository.ExerciseRepository;
@@ -19,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,24 +67,27 @@ public class WorkoutService {
         return workoutRepository.findWorkoutsByUserId(userId);
     }
 
+    public List<Workout> getAllWorkoutsByWorkoutType(Long userId, WorkoutType workoutType){
+        return workoutRepository.findWorkoutsByUserIdAndWorkoutType(userId, workoutType);
+    }
+
     @SneakyThrows
     public Workout createWorkout(Workout workout, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new Exception("User not found with ID: " + userId));
         workout.setUser(user);
 
-        if (workout.getWorkoutHasExercises() != null) {
-            for (WorkoutHasExercises workoutHasExercise : workout.getWorkoutHasExercises()) {
-                workoutHasExercise.setWorkout(workout);
+        if (workout.getWorkoutHasExercises() == null) {
+            workout.setWorkoutHasExercises(new ArrayList<>());
+        }
 
-                if (workoutHasExercise.getExercise() != null && workoutHasExercise.getExercise().getId() != null) {
-                    Long exerciseId = workoutHasExercise.getExercise().getId();
-                    Exercise exercise = exerciseRepository.findById(exerciseId).orElse(null);
-                    workoutHasExercise.setExercise(exercise);
-                } else {
-                    workoutHasExercise.setExercise(null);
-                }
-            }
+        for (WorkoutHasExercises workoutHasExercise : workout.getWorkoutHasExercises()) {
+            workoutHasExercise.setWorkout(workout);
+
+            Long exerciseId = workoutHasExercise.getExercise().getId();
+            Exercise exercise = exerciseRepository.findById(exerciseId)
+                    .orElseThrow(() -> new Exception("Exercise not found with ID: " + exerciseId));
+            workoutHasExercise.setExercise(exercise);
         }
 
         return workoutRepository.save(workout);

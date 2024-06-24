@@ -1,6 +1,6 @@
 package fks.healthhub_backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NonNull;
@@ -8,15 +8,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Getter
 @Setter
 @Entity
-@Table(name = "user_has_workouts")
-public class UserHasWorkouts {
+@Table(name = "recurring_workouts")
+public class RecurringWorkout {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -24,22 +27,24 @@ public class UserHasWorkouts {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    @JsonIgnoreProperties("userHasWorkouts")
+    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "workout_id", referencedColumnName = "id", nullable = false)
-    @JsonIgnoreProperties({"userHasWorkouts", "workoutHasExercises"})
+    @JsonIgnore
     private Workout workout;
 
-    @Column(name = "scheduled_at", nullable = false)
-    private ZonedDateTime scheduledAt;
+    @Column(name = "time_of_day")
+    private LocalTime timeOfDay;
 
-    @Column(name = "completed", nullable = false)
-    private Boolean completed;
-
+    @ElementCollection(targetClass = DayOfWeek.class)
+    @CollectionTable(name = "recurring_workout_days", joinColumns = @JoinColumn(name = "recurring_workout_id"),
+            indexes = {@Index(name = "idx_recurring_workout_id", columnList = "recurring_workout_id"),
+                    @Index(name = "idx_day_of_week", columnList = "day_of_week")})
+    @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week")
-    private DayOfWeek dayOfWeek;
+    private Set<DayOfWeek> daysOfWeek = new HashSet<>();
 
     @NonNull
     @Column(name = "created_at")
@@ -53,7 +58,7 @@ public class UserHasWorkouts {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserHasWorkouts that = (UserHasWorkouts) o;
+        RecurringWorkout that = (RecurringWorkout) o;
         return Objects.equals(id, that.id);
     }
 
@@ -62,3 +67,4 @@ public class UserHasWorkouts {
         return Objects.hash(id);
     }
 }
+
