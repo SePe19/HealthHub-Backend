@@ -41,7 +41,7 @@ public class WorkoutHasExercises {
     private double weight;
 
     @Column(name = "duration")
-    private int duration;
+    private int duration = 0;
 
     @Column(name = "rest_time")
     private int restTime;

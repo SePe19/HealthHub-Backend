@@ -40,11 +40,11 @@ public class Workout {
 
     @NonNull
     @Column(name = "created_at")
-    private ZonedDateTime createdAt;
+    private ZonedDateTime createdAt = ZonedDateTime.now();
 
     @NonNull
     @Column(name = "updated_at")
-    private ZonedDateTime updatedAt;
+    private ZonedDateTime updatedAt = ZonedDateTime.now();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
