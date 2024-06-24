@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.dto.WorkoutDTO;
 import fks.healthhub_backend.dto.WorkoutHasExercisesDTO;
-import fks.healthhub_backend.model.Exercise;
-import fks.healthhub_backend.model.User;
-import fks.healthhub_backend.model.Workout;
-import fks.healthhub_backend.model.WorkoutHasExercises;
+import fks.healthhub_backend.model.*;
 import fks.healthhub_backend.repository.UserRepository;
 import fks.healthhub_backend.repository.WorkoutHasExercisesRepository;
 import fks.healthhub_backend.repository.ExerciseRepository;
@@ -68,6 +65,10 @@ public class WorkoutService {
 
     public List<Workout> getAllWorkoutsByUser(Long userId){
         return workoutRepository.findWorkoutsByUserId(userId);
+    }
+
+    public List<Workout> getAllWorkoutsByWorkoutType(Long userId, WorkoutType workoutType){
+        return workoutRepository.findWorkoutsByUserIdAndWorkoutType(userId, workoutType);
     }
 
     @SneakyThrows
