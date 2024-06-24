@@ -11,6 +11,7 @@ import fks.healthhub_backend.repository.WorkoutHasExercisesRepository;
 import fks.healthhub_backend.repository.ExerciseRepository;
 import fks.healthhub_backend.repository.WorkoutRepository;
 import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,19 +95,26 @@ public class WorkoutService {
     }
 
     @SneakyThrows
+    @Transactional
     public void updateWorkout(Long id, Workout updatedWorkout, Long userId) {
         Workout workout = workoutRepository.findById(id)
                 .orElseThrow(() -> new NoResultException("Workout with ID: " + id + " could not be found"));
-        if(updatedWorkout != null) {
-            workout.setTitle(!updatedWorkout.getTitle().equals("") ? updatedWorkout.getTitle() : workout.getTitle());
-            workout.setDescription(!updatedWorkout.getDescription().equals("") ? updatedWorkout.getDescription() : workout.getDescription());
 
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new Exception("User not found with ID: " + userId));
-            workout.setUser(user);
+        if(!workout.getTitle().equals(updatedWorkout.getTitle())) workout.setTitle(updatedWorkout.getTitle());
+        if(!workout.getDescription().equals(updatedWorkout.getDescription())) workout.setTitle(updatedWorkout.getDescription());
+        if(!workout.getWorkoutType().equals(updatedWorkout.getWorkoutType())) workout.setTitle(String.valueOf(updatedWorkout.getWorkoutType()));
+        workout.setUpdatedAt(ZonedDateTime.now());
 
-            workout.setUpdatedAt(ZonedDateTime.now());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found with ID: " + userId));
+        workout.setUser(user);
+
+        List<WorkoutHasExercises> updatedWorkoutHasExercises = updatedWorkout.getWorkoutHasExercises();
+        for (WorkoutHasExercises workoutHasExercise : updatedWorkoutHasExercises) {
+            workoutHasExercise.setWorkout(workout);
         }
+        workout.setWorkoutHasExercises(updatedWorkoutHasExercises);
+
         workoutRepository.save(workout);
     }
 
