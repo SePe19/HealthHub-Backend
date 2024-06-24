@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,18 +76,17 @@ public class WorkoutService {
                 .orElseThrow(() -> new Exception("User not found with ID: " + userId));
         workout.setUser(user);
 
-        if (workout.getWorkoutHasExercises() != null) {
-            for (WorkoutHasExercises workoutHasExercise : workout.getWorkoutHasExercises()) {
-                workoutHasExercise.setWorkout(workout);
+        if (workout.getWorkoutHasExercises() == null) {
+            workout.setWorkoutHasExercises(new ArrayList<>());
+        }
 
-                if (workoutHasExercise.getExercise() != null && workoutHasExercise.getExercise().getId() != null) {
-                    Long exerciseId = workoutHasExercise.getExercise().getId();
-                    Exercise exercise = exerciseRepository.findById(exerciseId).orElse(null);
-                    workoutHasExercise.setExercise(exercise);
-                } else {
-                    workoutHasExercise.setExercise(null);
-                }
-            }
+        for (WorkoutHasExercises workoutHasExercise : workout.getWorkoutHasExercises()) {
+            workoutHasExercise.setWorkout(workout);
+
+            Long exerciseId = workoutHasExercise.getExercise().getId();
+            Exercise exercise = exerciseRepository.findById(exerciseId)
+                    .orElseThrow(() -> new Exception("Exercise not found with ID: " + exerciseId));
+            workoutHasExercise.setExercise(exercise);
         }
 
         return workoutRepository.save(workout);
