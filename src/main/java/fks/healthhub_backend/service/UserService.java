@@ -114,8 +114,9 @@ public class UserService {
 
     public JsonNode getWorkoutCompletion(Long userId, int lookBackDays) {
         ZonedDateTime lookBackDate = ZonedDateTime.now().minusDays(lookBackDays);
+        ZonedDateTime currentDate = ZonedDateTime.now();
 
-        List<UserHasWorkouts> workouts = userHasWorkoutsRepository.findByUserIdAndScheduledAtAfter(userId, lookBackDate);
+        List<UserHasWorkouts> workouts = userHasWorkoutsRepository.findByUserIdAndScheduledAtBetween(userId, lookBackDate, currentDate);
         int trueCount = 0;
         int falseCount = 0;
 
