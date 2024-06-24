@@ -29,7 +29,7 @@ public class UserHasWorkouts {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "workout_id", referencedColumnName = "id", nullable = false)
-    @JsonIgnoreProperties({"userHasWorkouts", "workoutHasExercises"})
+    @JsonIgnoreProperties({"userHasWorkouts"})
     private Workout workout;
 
     @Column(name = "scheduled_at", nullable = false)
