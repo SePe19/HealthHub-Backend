@@ -3,6 +3,7 @@ package fks.healthhub_backend.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import fks.healthhub_backend.dto.UserAuthDTO;
 import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.dto.UserHasWorkoutsDTO;
 import fks.healthhub_backend.model.*;
@@ -32,6 +33,32 @@ public class UserService {
     private final UserHasWorkoutsRepository userHasWorkoutsRepository;
     private final ObjectMapper objectMapper;
     private final RecurringWorkoutRepository recurringWorkoutRepository;
+
+    public void signup(UserAuthDTO userAuthDTO) {
+        User user = new User(userAuthDTO.getUsername(), userAuthDTO.getPassword());
+
+        User existingUser = userRepository.findByUsername(user.getUsername());
+        if (existingUser != null) {
+            throw new IllegalArgumentException("Username: " + user.getUsername() + " is already taken");
+        }
+        userRepository.save(user);
+    }
+
+    public User login(UserAuthDTO userAuthDTO) {
+        String username = userAuthDTO.getUsername();
+        String password = userAuthDTO.getPassword();
+        User user = userRepository.findByUsername(username);
+        if (user != null) {
+            if (password.equals(user.getPassword())) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public void logout(Long userId) {
+        System.out.println("User with ID: " + userId + "successfully logged out");
+    }
 
     @SneakyThrows
     public JsonNode getUser(Long id){

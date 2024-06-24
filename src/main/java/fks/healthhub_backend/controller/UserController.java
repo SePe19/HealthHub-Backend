@@ -2,11 +2,12 @@ package fks.healthhub_backend.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fks.healthhub_backend.dto.RecurringWorkoutDTO;
+import fks.healthhub_backend.dto.UserAuthDTO;
 import fks.healthhub_backend.dto.UserDTO;
 import fks.healthhub_backend.dto.UserHasWorkoutsDTO;
 import fks.healthhub_backend.model.User;
 import fks.healthhub_backend.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,29 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
+@RequiredArgsConstructor
 @RequestMapping("api/user")
 public class UserController {
     private final UserService userService;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @PostMapping("/signup")
+    public void signup(@RequestBody UserAuthDTO userAuthDTO) {
+        userService.signup(userAuthDTO);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Long> login(@RequestBody UserAuthDTO userAuthDTO) {
+        User user = userService.login(userAuthDTO);
+        if (user != null) {
+            return ResponseEntity.ok(user.getId());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @PostMapping("/logout")
+    public void logout(@RequestParam Long userId) {
+        userService.logout(userId);
     }
 
     @GetMapping("/{id}")
